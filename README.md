@@ -1,1417 +1,636 @@
-# Sistema de Gestão para Clínica de Ginecologia Natural e Emocional
+# Sistema de Gestão Clínica — Centro de Ginecologia Natural e Emocional
 
-Projeto de modelagem de banco de dados desenvolvido para o **Centro de Ginecologia Natural e Emocional**, com o objetivo de organizar informações de pacientes, médicos, funcionários, consultas, pagamentos, prontuários, prescrições, exames e demais processos da clínica.
+Projeto de **modelagem de banco de dados** para uma clínica de saúde da mulher. O modelo organiza em um único banco o cadastro de pacientes e profissionais, a agenda, as consultas, os pagamentos, o prontuário eletrônico, as prescrições e os exames. Hoje essas informações ficam espalhadas entre a IA de agendamento, o Google Calendar, o sistema de pagamento e anotações do profissional.
+
+> Trabalho desenvolvido pelo **Grupo 3** na disciplina de **Modelagem de Dados**.
 
 ---
 
-# Etapa 1 — Identificação da Empresa
+## Sumário
 
-### Qual é o nome da empresa?
+1. [Contexto do negócio](#1-contexto-do-negócio)
+2. [Processo atual](#2-processo-atual)
+3. [Problemas identificados](#3-problemas-identificados)
+4. [Requisitos funcionais](#4-requisitos-funcionais)
+5. [Requisitos não funcionais](#5-requisitos-não-funcionais)
+6. [Regras de negócio](#6-regras-de-negócio)
+7. [Aprovações e permissões](#7-aprovações-e-permissões)
+8. [Modelo de dados](#8-modelo-de-dados)
+9. [Decisões de modelagem](#9-decisões-de-modelagem)
+10. [Pendências e próximos passos](#10-pendências-e-próximos-passos)
+11. [Estrutura do repositório](#11-estrutura-do-repositório)
+12. [Mapa das etapas da disciplina](#12-mapa-das-etapas-da-disciplina)
 
-**Centro de Ginecologia Natural e Emocional**
+---
 
-### Qual é o segmento?
+## 1. Contexto do negócio
 
-**Saúde da Mulher / Ginecologia Natural e Integrativa**
+| Item | Descrição |
+|---|---|
+| **Empresa** | Centro de Ginecologia Natural e Emocional |
+| **Segmento** | Saúde da mulher — ginecologia natural e integrativa |
+| **Oferta** | Consultas e tratamentos naturais para sintomas e diagnósticos ginecológicos |
+| **Público principal** | Mulheres de 30 a 55 anos com SOP (síndrome dos ovários policísticos), endometriose, mioma, candidíase ou sintomas de perimenopausa |
+| **Motivo da escolha** | A clínica pertence a uma pessoa próxima de um integrante do grupo, o que facilita o levantamento de requisitos |
 
-### O que ela vende ou oferece?
+### Informações estratégicas para a clínica
 
-Consulta e tratamento natural para todos os sintomas e diagnósticos ginecológicos.
-
-### Quem são seus principais clientes?
-
-Mulheres de 30 a 55 anos com diagnósticos ginecológicos e/ou sintomas.
-
-Mulheres com:
-
-- SOMP
-- Endometriose
-- Mioma
-- Candidíase
-- Perimenopausa
-
-### Quais são seus principais setores?
-
-Setores eu não sei responder (questionar).
-
-### Como funciona atualmente?
-
-Atualmente, o primeiro contato com o paciente é feito por uma inteligência artificial, que cuida do processo de agendamento.
-
-Essa IA está sincronizada com o Google Calendar e sempre oferece três horários disponíveis para o paciente escolher.
-
-Depois que o paciente escolhe o horário, a IA envia automaticamente o link de pagamento e as regras de cancelamento.
-
-Antes da consulta, o sistema envia três lembretes, sendo um deles de confirmação da presença.
-
-Depois da consulta, o profissional realiza um follow-up, presencial ou por telefone, uma semana depois, para verificar como o paciente está evoluindo, se iniciou o tratamento proposto e se ainda tem alguma dúvida.
-
-Ou seja, todo o processo de agendamento e lembretes é automatizado, e apenas o acompanhamento pós-consulta é feito manualmente pelo profissional.
-
-### Quais informações são importantes para o negócio?
-
-- Principal queixa
-- Diagnóstico, quando houver
-- Perfil da paciente
-- Histórico de tratamentos
+- Queixa principal e diagnóstico da paciente
+- Perfil da paciente e histórico de tratamentos
 - Taxa de comparecimento
 - Taxa de remarcação
 
 ---
 
-# Etapa 2 — Escolha da Empresa
+## 2. Processo atual
 
-Escolhemos a empresa por ser de uma pessoa próxima de um integrante do grupo.
-
-**Observação:** questionar.
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 17:47
-
----
-
-# Etapa 3 — Processo Atual
-
-## Fluxo geral
-
-**Paciente → Agenda → Faz o pagamento → Lembretes antes da consulta → Faz a consulta → Follow-up**
-
-## Agendamento
-
-### Quem participa?
-
-Paciente e IA (assistente virtual).
-
-### O que inicia o processo?
-
-O paciente entra em contato querendo marcar uma consulta.
-
-### O que acontece?
-
-A IA conversa com o paciente e oferece 3 horários disponíveis, já verificando o Google Calendar.
-
-### Qual informação é gerada?
-
-Data e horário escolhidos e dados do paciente.
-
-### Qual é o resultado?
-
-Consulta marcada na agenda.
-
----
-
-## Pagamento
-
-### Quem participa?
-
-Paciente e sistema de pagamento integrado à IA.
-
-### O que inicia o processo?
-
-A escolha do horário pelo paciente.
-
-### O que acontece?
-
-A IA envia o link de pagamento e a política de cancelamento.
-
-### Qual informação é gerada?
-
-Comprovante/registro do pagamento.
-
-### Qual é o resultado?
-
-Consulta confirmada e paga.
-
----
-
-## Lembretes
-
-### Quem participa?
-
-IA e paciente.
-
-### O que inicia o processo?
-
-A aproximação da data da consulta.
-
-### O que acontece?
-
-São enviados 3 lembretes, sendo um deles de confirmação de presença.
-
-### Qual informação é gerada?
-
-Confirmação ou não da presença do paciente.
-
-### Qual é o resultado?
-
-Paciente ciente e confirmado para a consulta.
-
----
-
-## Consulta
-
-### Quem participa?
-
-Paciente e profissional.
-
-### O que inicia o processo?
-
-O horário marcado chegou.
-
-### O que acontece?
-
-O atendimento clínico em si acontece.
-
-### Qual informação é gerada?
-
-Registro clínico: queixas, avaliação e plano de tratamento.
-
-### Qual é o resultado?
-
-Paciente atendido, com orientações ou protocolo definido.
-
----
-
-## Pós-consulta
-
-### Quem participa?
-
-Profissional e paciente.
-
-### O que inicia o processo?
-
-Passou 1 semana da consulta.
-
-### O que acontece?
-
-O profissional entra em contato, presencialmente ou por telefone, para verificar a evolução.
-
-### Qual informação é gerada?
-
-Registro de como o paciente está, se seguiu o tratamento e suas dúvidas.
-
-### Qual é o resultado?
-
-Acompanhamento do progresso e ajuste do tratamento, se necessário.
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 17:55
-
----
-
-# Etapa 4 — Problemas Identificados
-
-## Problemas
-
-### 1. Follow-up pós-consulta feito manualmente
-
-O acompanhamento é realizado por telefone ou presencialmente.
-
-### 2. Não há menção de prontuário eletrônico integrado
-
-Os dados clínicos não estão descritos como integrados a um prontuário eletrônico.
-
-### 3. Não há relato de relatórios
-
-Não foram identificados relatórios sobre:
-
-- Quantidade de agendamentos
-- Faltas
-- Cancelamentos
-- Outros indicadores da clínica
-
-### 4. Pagamento e agendamento parecem estar em sistemas diferentes
-
-O link de pagamento é enviado separadamente.
-
-## Consequências
-
-### 1. Dependência do profissional
-
-Depende do profissional lembrar de realizar o follow-up, podendo atrasar ou até não acontecer.
-
-### 2. Possível perda ou dispersão dos dados
-
-Os dados do paciente podem ficar espalhados.
-
-### 3. Dificuldade de acompanhar o desempenho da clínica
-
-Sem relatórios, torna-se mais difícil acompanhar os indicadores do negócio.
-
-### 4. Risco de informações financeiras separadas
-
-Existe o risco de a informação de pagamento não ficar registrada junto com a consulta.
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 18:21
-
----
-
-# Etapa 5 — Cadastros Gerais
-
-## Pessoas
-
-O sistema deverá cadastrar pessoas:
-
-- Nome
-- Sobrenome
-- CPF
-- Sexo
-- E-mail
-
-O sistema deverá cadastrar o endereço e o telefone de cada pessoa.
-
-## Pacientes
-
-O sistema deverá cadastrar pacientes, vinculando:
-
-- Dados da pessoa
-- Tipo sanguíneo
-
-## Funcionários
-
-O sistema deverá cadastrar funcionários:
-
-- Cargo
-- CRM, se for o caso
-
-## Médicos
-
-O sistema deverá cadastrar médicos:
-
-- CRM
-- Data de contratação
-
-## Especialidades
-
-O sistema deverá cadastrar as especialidades médicas.
-
-## Salas
-
-O sistema deverá cadastrar as salas de atendimento:
-
-- Número
-- Andar
-
----
-
-## Convênios
-
-O sistema deverá:
-
-- Cadastrar convênios
-- Registrar nome
-- Registrar número de registro na ANS
-- Registrar telefone
-- Vincular um paciente a um ou mais convênios
-- Registrar número da carteirinha
-- Registrar data de início
-- Registrar validade do convênio
-
----
-
-## Alergias
-
-O sistema deverá:
-
-- Cadastrar tipos de alergia
-- Registrar as alergias de cada paciente
-- Registrar gravidade
-- Registrar data de identificação
-
----
-
-## Agendamento
-
-O sistema deverá:
-
-- Gerenciar a agenda dos médicos
-- Registrar data
-- Registrar horário de início
-- Registrar horário de fim
-- Registrar sala
-- Registrar status
-- Permitir marcar uma consulta
-- Vincular paciente, médico, sala e convênio, se houver
-- Registrar data e hora
-- Registrar tipo e status da consulta
-- Permitir consultar os horários disponíveis de cada médico
-
----
-
-## Pagamento
-
-O sistema deverá registrar o pagamento de cada consulta:
-
-- Valor
-- Forma de pagamento
-- Data
-- Status
-
----
-
-## Prontuário e Atendimento
-
-O sistema deverá:
-
-- Abrir um prontuário para cada paciente
-- Registrar a evolução do prontuário a cada consulta
-- Registrar queixa principal
-- Registrar diagnóstico
-- Registrar CID-10
-- Registrar conduta
-
----
-
-## Prescrição
-
-O sistema deverá:
-
-- Cadastrar medicamentos
-- Gerar uma prescrição vinculada a uma consulta
-- Registrar os itens da prescrição
-- Registrar medicamento
-- Registrar posologia
-- Registrar dosagem
-- Registrar duração do tratamento
-
----
-
-## Exames
-
-O sistema deverá:
-
-- Cadastrar tipos de exame
-- Registrar nome
-- Registrar preço padrão
-- Registrar preparo necessário
-- Cadastrar laboratórios externos
-- Permitir solicitar exames vinculados a uma consulta e a um paciente
-- Registrar data de solicitação
-- Registrar data de realização
-- Registrar status do exame
-- Registrar resultado do exame
-- Registrar laudo
-- Permitir arquivo anexo
-- Registrar médico responsável
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 18:43
-
----
-
-# Etapa 6 — Requisitos Não Funcionais
-
-## Segurança
-
-O sistema deverá:
-
-- Controlar o acesso dos usuários por perfil:
-  - Médico
-  - Funcionário
-  - Paciente
-- Manter os dados do prontuário e das prescrições protegidos contra acesso não autorizado
-- Manter registro das operações realizadas pelos usuários, identificando quem alterou o quê e quando
-
-## Privacidade / LGPD
-
-O sistema deverá:
-
-- Seguir as regras da LGPD para armazenar dados sensíveis de saúde dos pacientes
-- Permitir que o paciente solicite seus próprios dados, conforme a lei
-
-## Desempenho
-
-O sistema deverá:
-
-- Apresentar as consultas e o histórico do paciente em tempo adequado para uso durante o atendimento
-- Processar o agendamento, feito pela IA ou funcionário, sem demora perceptível para o paciente
-
-## Disponibilidade
-
-O sistema deverá:
-
-- Estar disponível para agendamento a qualquer horário
-- Manter backup periódico dos dados, evitando perda de informações do prontuário
-
-## Usabilidade
-
-O sistema deverá:
-
-- Ter uma interface simples para o uso do profissional durante a consulta
-- Ser fácil de usar pelo paciente ao interagir com a IA de agendamento
-
-## Confiabilidade
-
-O sistema deverá:
-
-- Garantir que os dados de agendamento estejam sempre sincronizados com o Google Calendar
-- Evitar duplicidade de horários
-- Confirmar o pagamento antes de considerar a consulta como confirmada
-
-## Integração
-
-O sistema deverá:
-
-- Integrar-se com o Google Calendar para sincronizar a agenda dos médicos
-- Integrar-se com um sistema de pagamento para gerar e enviar os links automaticamente
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 18:43
-
----
-
-# Etapa 7 — Regras de Negócio
-
-## Pessoas, pacientes e funcionários
-
-- Toda pessoa deve possuir CPF único.
-- Um paciente está associado a apenas uma pessoa.
-- Um médico está associado a apenas uma pessoa.
-- Um médico deve possuir CRM válido.
-- Um médico pode possuir uma ou mais especialidades. **(Questionar)**
-
-## Convênios
-
-- Um paciente pode possuir vários convênios. **(Questionar)**
-- Um convênio deve possuir data de validade.
-- Uma consulta pode ou não estar vinculada a um convênio.
-
-## Alergias
-
-- Um paciente pode possuir várias alergias.
-- Cada alergia registrada deve possuir um grau de gravidade.
-
-## Agendamento
-
-- Uma consulta deve estar associada a um paciente e a um médico.
-- Uma consulta deve ocorrer em uma sala disponível.
-- Um médico não pode ter duas consultas marcadas no mesmo horário.
-- A IA deve oferecer sempre 3 horários disponíveis ao paciente, se houver 3 horários disponíveis.
-- Um horário só é considerado ocupado após a confirmação do agendamento.
-
-## Pagamento
-
-- Uma consulta só é confirmada após o envio do link e pagamento da consulta.
-- Toda consulta deve possuir um pagamento vinculado.
-- O status do pagamento deve ser atualizado conforme a confirmação.
-
-## Lembretes e Cancelamento
-
-- O paciente deve receber 3 lembretes antes da consulta.
-- Um dos lembretes deve ser de confirmação de presença.
-- Um paciente pode cancelar a consulta conforme a política de cancelamento definida.
-
-## Prontuário e Atendimento
-
-- Todo paciente deve possuir um prontuário.
-- Um prontuário pode conter várias evoluções, sendo uma por consulta.
-- Toda consulta realizada deve gerar uma evolução no prontuário.
-
-## Prescrição
-
-- Uma prescrição deve estar vinculada a uma consulta.
-- Uma prescrição deve conter pelo menos um item (medicamento). **(Questionar)**
-- Um item de prescrição deve possuir posologia e dosagem definidas.
-
-## Exames
-
-- Um exame deve estar vinculado a uma consulta e a um paciente.
-- Um exame pode ser realizado em um laboratório externo.
-- Todo exame realizado deve gerar um resultado.
-
-## Follow-up
-
-- Toda consulta deve gerar um follow-up após 1 semana.
-- O follow-up deve verificar a evolução dos sintomas e a adesão ao tratamento.
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 19:07
-
----
-
-# Etapa 8 — Aprovações e Alterações
-
-## Prontuário
-
-- Somente o médico responsável pode alterar o prontuário do paciente.
-
-## Cadastro
-
-- Somente funcionários autorizados podem alterar dados cadastrais de pacientes.
-
-## Follow-up
-
-- Somente o profissional pode confirmar a realização de um follow-up. **(Questionar)**
-
-## Pagamento
-
-- A consulta só é confirmada após o pagamento ou confirmação do convênio.
-- O sistema deve seguir a forma de pagamento definida pela clínica, como o link de pagamento enviado pela IA.
-
-## Cancelamento
-
-- O cancelamento da consulta deve seguir a política definida pela clínica.
-- Deve considerar prazo mínimo e existência ou não de reembolso.
-- Um cancelamento feito fora do prazo pode gerar cobrança, conforme regra da clínica.
-
-## Acesso à Informação
-
-- Dados do prontuário são de acesso restrito à equipe médica.
-- Dados financeiros, como pagamentos, são de acesso restrito à administração da clínica.
-- O paciente pode acessar apenas seus próprios dados.
-
-## Agendamento
-
-- A IA só pode oferecer horários que estejam livres na agenda do médico.
-- Um horário só é confirmado depois que o paciente escolhe e realiza o pagamento ou confirma o convênio.
-
-## Convênios
-
-- A clínica só aceita convênios previamente cadastrados no sistema.
-- O uso do convênio depende da validade da carteirinha do paciente.
-
-## Follow-up
-
-- O follow-up pós-consulta é de responsabilidade do profissional que atendeu o paciente. **(Talvez colocar a IA para mandar uma mensagem automática)**
-- O prazo padrão definido pela clínica para o follow-up é de 1 semana após a consulta.
-
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 20:13
-
----
-
-# Etapa 10 — Entidades do Banco de Dados
-
-As entidades identificadas no modelo são:
+O agendamento e os lembretes já são automatizados por uma **IA de atendimento** sincronizada ao Google Calendar. Apenas o acompanhamento pós-consulta é manual.
 
 ```text
-PESSOA
-ENDERECO_PESSOA
-TELEFONE_PESSOA
-PACIENTE
-FUNCIONARIO
-MEDICO
-ESPECIALIDADE
-MEDICO_ESPECIALIDADE
-ALERGIA
-PACIENTE_ALERGIA
-CONVENIO
-PACIENTE_CONVENIO
-SALA
-AGENDA
-CONSULTA
-PAGAMENTO
-PRONTUARIO
-EVOLUCAO_PRONTUARIO
-MEDICAMENTO
-PRESCRICAO
-ITEM_PRESCRICAO
-TIPO_EXAME
-LABORATORIO_EXTERNO
-EXAME
-RESULTADO_EXAME
-
----
-
-# Etapa 11 Atributos
-
-## PESSOA
-
-```text
-id_pessoa (PK)
-cpf
-nome
-sobrenome
-sexo
-email
-
+Paciente → Agendamento (IA) → Pagamento → Lembretes → Consulta → Follow-up (1 semana)
 ```
 
-## ENDERECO_PESSOA
-
-```text
-id_endereco (PK)
-id_pessoa (FK)
-logradouro
-numero
-bairro
-cidade
-estado
-cep
-complemento
-
-```
-
-## TELEFONE_PESSOA
-
-```text
-id_telefone (PK)
-id_pessoa (FK)
-numero
-
-```
-
-## PACIENTE
-
-```text
-id_paciente (PK)
-id_pessoa (FK)
-tipo_sanguineo
-
-```
-
-## FUNCIONARIO
-
-```text
-id_funcionario (PK)
-id_pessoa (FK)
-cargo
-crm
-
-```
-
-## MEDICO
-
-```text
-id_medico (PK)
-id_pessoa (FK)
-crm
-data_contratacao
-
-```
-
-## ESPECIALIDADE
-
-```text
-id_especialidade (PK)
-nome
-
-```
-
-## MEDICO_ESPECIALIDADE
-
-```text
-id_medico (FK)
-id_especialidade (FK)
-rqe
-
-```
-
-## ALERGIA
-
-```text
-id_alergia (PK)
-descricao
-
-```
-
-## PACIENTE_ALERGIA
-
-```text
-id_paciente (FK)
-id_alergia (FK)
-gravidade
-data_identificacao
-
-```
-
-## CONVENIO
-
-```text
-id_convenio (PK)
-nome
-registro_ans
-telefone_contato
-
-```
-
-## PACIENTE_CONVENIO
-
-```text
-id_paciente (FK)
-id_convenio (FK)
-numero_carteirinha
-data_inicio
-data_validade
-ativo
-
-```
-
-## SALA
-
-```text
-id_sala (PK)
-numero
-andar
-
-```
-
-## AGENDA
-
-```text
-id_horario (PK)
-id_medico (FK)
-id_sala (FK)
-data
-hora_inicio
-hora_fim
-status
-
-```
-
-## CONSULTA
-
-```text
-id_consulta (PK)
-id_paciente (FK)
-id_medico (FK)
-id_sala (FK)
-id_convenio (FK)
-data_hora
-tipo_consulta
-status
-valor
-observacoes
-
-```
-
-## PAGAMENTO
-
-```text
-id_pagamento (PK)
-id_consulta (FK)
-valor
-forma_pagamento
-data_pagamento
-status
-
-```
-
-## PRONTUARIO
-
-```text
-id_prontuario (PK)
-id_paciente (FK)
-data_abertura
-sintomas
-
-```
-
-## EVOLUCAO_PRONTUARIO
-
-```text
-id_evolucao (PK)
-id_prontuario (FK)
-id_consulta (FK)
-data
-queixa_principal
-diagnostico
-cid10
-conduta
-
-```
-
-## MEDICAMENTO
-
-```text
-id_medicamento (PK)
-nome
-principio_ativo
-fabricante
-tarja
-
-```
-
-## PRESCRICAO
-
-```text
-id_prescricao (PK)
-id_consulta (FK)
-data_emissao
-validade
-
-```
-
-## ITEM_PRESCRICAO
-
-```text
-id_prescricao (FK)
-id_medicamento (FK)
-posologia
-dosagem
-duracao_tratamento
-
-```
-
-## TIPO_EXAME
-
-```text
-id_tipo_exame (PK)
-nome
-preco_padrao
-preparo_necessario
-
-```
-
-## LABORATORIO_EXTERNO
-
-```text
-id_laboratorio (PK)
-nome
-cnpj
-telefone
-
-```
-
-## EXAME
-
-```text
-id_exame (PK)
-id_consulta (FK)
-id_tipo_exame (FK)
-id_paciente (FK)
-id_funcionario_responsavel (FK)
-id_laboratorio_externo (FK)
-data_solicitacao
-data_realizacao
-status
-
-```
-
-## RESULTADO_EXAME
-
-```text
-id_resultado (PK)
-id_exame (FK)
-id_medico (FK)
-data_resultado
-laudo
-arquivo_anexo
-
-```
-
----
----
-# Etapa 12 — Relacionamentos
-
-## Pessoas
-
-```text
-PESSOA — POSSUI — ENDERECO_PESSOA
-PESSOA — POSSUI — TELEFONE_PESSOA
-PESSOA — ESPECIALIZA — PACIENTE
-PESSOA — ESPECIALIZA — MEDICO
-PESSOA — ESPECIALIZA — FUNCIONARIO
-
-```
-
-## Convênio
-
-```text
-CONVENIO — VINCULA — PACIENTE_CONVENIO
-
-```
-
-## Alergias
-
-```text
-PACIENTE — POSSUI — PACIENTE_ALERGIA
-ALERGIA — CLASSIFICA — PACIENTE_ALERGIA
-
-```
-
-## Agendamento
-
-```text
-MEDICO — TEM — AGENDA
-PACIENTE — AGENDA — CONSULTA
-
-```
-
-## Prontuário
-
-```text
-PRONTUARIO — REGISTRA — EVOLUCAO_PRONTUARIO
-CONSULTA — GERA — EVOLUCAO_PRONTUARIO
-
-```
-
-## Prescrição
-
-```text
-PRESCRICAO — CONTEM — ITEM_PRESCRICAO
-MEDICAMENTO — COMPÕE — ITEM_PRESCRICAO
-
-```
-
-## Especialidade
-
-```text
-MEDICO — POSSUI — MEDICO_ESPECIALIDADE
-ESPECIALIDADE — CLASSIFICA — MEDICO_ESPECIALIDADE
-
-```
-
-## Exames
-
-```text
-CONSULTA — SOLICITA — EXAME
-TIPO_EXAME — CLASSIFICA — EXAME
-EXAME — GERA — RESULTADO_EXAME
-MEDICO — ASSINA — RESULTADO_EXAME
-LABORATORIO_EXTERNO — PROCESSA — EXAME
-
-```
-
-## Pagamento
-
-```text
-CONSULTA — GERA — PAGAMENTO
-
+| Etapa | Participantes | Gatilho | O que acontece | Informação gerada | Resultado |
+|---|---|---|---|---|---|
+| **Agendamento** | Paciente e IA | Paciente pede uma consulta | A IA consulta o Google Calendar e oferece 3 horários livres | Data, horário e dados da paciente | Consulta marcada |
+| **Pagamento** | Paciente e sistema de pagamento | Escolha do horário | A IA envia o link de pagamento e a política de cancelamento | Registro do pagamento | Consulta paga e confirmada |
+| **Lembretes** | IA e paciente | Proximidade da consulta | São enviados 3 lembretes, sendo um deles de confirmação de presença | Presença confirmada ou não | Paciente ciente da consulta |
+| **Consulta** | Paciente e profissional | Horário marcado | Atendimento clínico | Queixas, avaliação e plano de tratamento | Orientações ou protocolo definidos |
+| **Follow-up** | Profissional e paciente | 1 semana após a consulta | Contato presencial ou por telefone | Evolução, adesão ao tratamento e dúvidas | Tratamento acompanhado e ajustado |
+
+### Fluxograma
+
+O fluxograma completo está em [`Fluxograma.drawio.xml`](Fluxograma.drawio.xml). Resumo:
+
+```mermaid
+flowchart TD
+    A([Início]) --> B[Paciente contata a clínica via IA]
+    B --> C[IA verifica a agenda no Google Calendar]
+    C --> D{Horário disponível?}
+    D -- Não --> E([Fim: sem horário livre])
+    D -- Sim --> F[IA oferece três horários]
+    F --> G[Paciente escolhe o horário]
+    G --> H[IA envia link de pagamento e política de cancelamento]
+    H --> I{Pagamento confirmado?}
+    I -- Não --> J([Fim: horário liberado])
+    I -- Sim --> K[Consulta confirmada]
+    K --> L[IA envia 3 lembretes, um deles de confirmação de presença]
+    L --> M[Médico atende a paciente]
+    M --> N[Registra evolução no prontuário]
+    N --> O{Precisa de prescrição ou exame?}
+    O -- Não --> S[Consulta encerrada]
+    O -- Apenas prescrição --> P[Gera prescrição]
+    O -- Apenas exame --> Q[Solicita exame]
+    O -- Ambos --> R[Gera prescrição e solicita exame]
+    P --> S
+    Q --> S
+    R --> S
+    S --> T[Follow-up após 1 semana]
+    T --> U[Verifica sintomas, adesão e dúvidas]
+    U --> V([Fim])
 ```
 
 ---
 
-# Etapa 13 — Cardinalidades
+## 3. Problemas identificados
 
-Prontuario (1,1) --- Vincula --- Convenio (1,N)
+| # | Problema | Consequência |
+|---|---|---|
+| 1 | Follow-up pós-consulta feito manualmente | Depende de o profissional lembrar; pode atrasar ou não acontecer |
+| 2 | Não há prontuário eletrônico integrado | Dados clínicos ficam dispersos e podem se perder |
+| 3 | Não há relatórios de agendamentos, faltas e cancelamentos | Difícil acompanhar o desempenho da clínica |
+| 4 | Pagamento e agendamento em sistemas separados | Risco de o pagamento não ficar vinculado à consulta |
 
-Endereco_Pessoa (1,1) --- possui --- Pessoa (1,N)
+O modelo proposto responde a cada um deles:
 
-Pessoa (1,N) --- possui --- Telefone_Pessoa (1,1)
+| # | Como o modelo resolve |
+|---|---|
+| 1 | `FOLLOW_UP` registra a data prevista, a realização e o resultado de cada acompanhamento, permitindo cobrar os pendentes |
+| 2 | `PRONTUARIO` e `EVOLUCAO_PRONTUARIO` centralizam o histórico clínico da paciente |
+| 3 | Os status de `CONSULTA` (incluindo `falta` e `remarcada`) e a tabela `LEMBRETE` permitem calcular comparecimento, faltas e remarcações |
+| 4 | `PAGAMENTO` fica vinculado à `CONSULTA` que o originou |
 
-Convenio (0,N) --- vincula --- Paciente_Convenio (1,1)
+---
 
-Prontuario (1,1) --- registro --- Evolucao_Prontuario (1,N)
+## 4. Requisitos funcionais
 
-Pessoa (0,1) --- especializa --- Paciente (1,1)
+### Cadastros
 
-Pessoa (0,1) --- especializa --- Funcionario (1,1)
+| Cadastro | Dados registrados |
+|---|---|
+| **Pessoa** | Nome, sobrenome, CPF, sexo, e-mail, data de nascimento, endereços e telefones |
+| **Paciente** | Vínculo com a pessoa e tipo sanguíneo |
+| **Funcionário** | Vínculo com a pessoa, cargo e data de contratação |
+| **Médico** | Vínculo com o funcionário e CRM |
+| **Especialidade** | Nome da especialidade e RQE do médico em cada uma |
+| **Sala** | Número e andar |
+| **Convênio** | Nome, registro na ANS e telefone |
+| **Alergia** | Descrição, com gravidade e data de identificação por paciente |
+| **Medicamento** | Nome, princípio ativo, fabricante e tarja |
+| **Tipo de exame** | Nome, preço padrão e preparo necessário |
+| **Laboratório externo** | Nome, CNPJ e telefone |
+| **CID** | Código, descrição e categoria |
 
-Pessoa (0,1) --- especializa --- Medico (1,1)
+### Operações
 
-Paciente (0,N) --- agenda --- Consulta (1,1)
+- **Convênios:** vincular a paciente a um ou mais convênios, com número da carteirinha, data de início e validade.
+- **Agenda:** gerenciar os horários de cada médico (data, início, fim, sala e status) e consultar os horários livres.
+- **Consulta:** marcar consultas vinculando paciente, médico, sala, horário da agenda e, se houver, convênio, com data/hora, tipo e status.
+- **Lembretes:** registrar cada lembrete enviado pela IA (tipo, data, canal) e a confirmação de presença da paciente.
+- **Follow-up:** agendar o acompanhamento 1 semana após a consulta e registrar canal, evolução dos sintomas, adesão ao tratamento e dúvidas.
+- **Pagamento:** registrar valor, forma, data e status do pagamento de cada consulta.
+- **Prontuário:** abrir um prontuário por paciente e registrar uma evolução a cada consulta (queixa principal, diagnóstico, CID e conduta).
+- **Prescrição:** emitir prescrições vinculadas à consulta, com medicamento, posologia, dosagem e duração de cada item.
+- **Exames:** solicitar exames vinculados à consulta e à paciente, acompanhar datas e status, indicar o laboratório externo e registrar o resultado (laudo, anexo e médico responsável).
 
-Paciente (1,1) --- possui --- Prontuario (1,1)
+---
 
-Paciente (0,N) --- possui --- Paciente_Alergia (1,1)
+## 5. Requisitos não funcionais
 
-Alergia (0,N) --- classifica --- Paciente_Alergia (1,1)
+| Categoria | Requisito |
+|---|---|
+| **Segurança** | Controle de acesso por perfil (médico, funcionário e paciente); proteção do prontuário e das prescrições; registro de auditoria de quem alterou o quê e quando |
+| **Privacidade (LGPD)** | Tratamento de dados sensíveis de saúde conforme a LGPD; a paciente pode solicitar seus próprios dados |
+| **Desempenho** | Histórico da paciente disponível em tempo adequado durante o atendimento; agendamento sem demora perceptível |
+| **Disponibilidade** | Agendamento disponível 24 horas; backup periódico para evitar perda do prontuário |
+| **Usabilidade** | Interface simples para o profissional durante a consulta; interação fácil com a IA de agendamento |
+| **Confiabilidade** | Agenda sempre sincronizada com o Google Calendar; sem duplicidade de horários; consulta só confirmada após o pagamento |
+| **Integração** | Google Calendar (agenda dos médicos) e sistema de pagamento (geração e envio automático de links) |
 
-Paciente (0,N) --- tem --- Paciente_Convenio (1,1)
+---
 
-Medico (0,N) --- tem --- Agenda (1,1)
+## 6. Regras de negócio
 
-Agenda (0,1) --- Aloca --- Sala (0,N)
+| Código | Área | Regra |
+|---|---|---|
+| RN01 | Pessoas | Toda pessoa deve possuir CPF único. |
+| RN02 | Pessoas | Cada paciente e cada funcionário correspondem a exatamente uma pessoa. |
+| RN03 | Pessoas | Todo médico é um funcionário e deve possuir CRM válido e único. |
+| RN04 | Pessoas | Um médico possui uma ou mais especialidades. |
+| RN05 | Convênios | Uma paciente pode possuir vários convênios, cada um com data de validade. |
+| RN06 | Convênios | A clínica só aceita convênios cadastrados, e o uso depende da validade da carteirinha. |
+| RN07 | Convênios | Uma consulta pode ou não estar vinculada a um convênio (atendimento particular). |
+| RN08 | Alergias | Uma paciente pode possuir várias alergias, cada uma com grau de gravidade. |
+| RN09 | Agendamento | Toda consulta deve estar associada a uma paciente, a um médico e a uma sala disponível. |
+| RN10 | Agendamento | Um médico não pode ter duas consultas no mesmo horário. |
+| RN11 | Agendamento | A IA oferece 3 horários livres (ou todos os disponíveis, se houver menos de 3). |
+| RN12 | Agendamento | Um horário só é considerado ocupado após a confirmação do agendamento. |
+| RN13 | Pagamento | A consulta só é confirmada após o pagamento ou a confirmação do convênio. |
+| RN14 | Pagamento | O status do pagamento é atualizado conforme a confirmação. |
+| RN15 | Lembretes | A paciente recebe 3 lembretes antes da consulta, sendo um deles de confirmação de presença. |
+| RN16 | Cancelamento | O cancelamento segue a política da clínica (prazo mínimo e reembolso); fora do prazo pode gerar cobrança. |
+| RN17 | Prontuário | Toda paciente possui exatamente um prontuário. |
+| RN18 | Prontuário | Toda consulta realizada gera uma evolução no prontuário. |
+| RN19 | Prescrição | Toda prescrição está vinculada a uma consulta e contém pelo menos um item. |
+| RN20 | Prescrição | Todo item de prescrição possui posologia e dosagem definidas. |
+| RN21 | Exames | Todo exame está vinculado a uma consulta e a uma paciente, e pode ser processado por um laboratório externo. |
+| RN22 | Exames | Todo exame realizado gera um resultado assinado por um médico. |
+| RN23 | Follow-up | Toda consulta gera um follow-up 1 semana depois, para verificar sintomas e adesão ao tratamento. |
 
-Medico (1,1) --- possui --- Medico_Especialidade (1,N)
+---
 
-Especialidade (1,N) --- classifica --- Medico_Especialidade (1,N)
+## 7. Aprovações e permissões
 
-Medico (0,N) --- realiza --- Consulta (1,1)
+| Área | Quem pode | Observação |
+|---|---|---|
+| Prontuário | Somente o médico responsável altera | Acesso restrito à equipe médica |
+| Dados cadastrais | Somente funcionários autorizados alteram | — |
+| Dados financeiros | Somente a administração da clínica acessa | — |
+| Follow-up | O profissional que atendeu confirma a realização | Prazo padrão de 1 semana |
+| Dados próprios | A paciente acessa apenas os próprios dados | Direito garantido pela LGPD |
 
-Sala (0,N) --- aloca --- Consulta (1,1)
+---
 
-Consulta (0,N) --- solicita --- Exame (1,1)
+## 8. Modelo de dados
 
-Tipo_Exame (0,N) --- classifica --- Exame (1,1)
+O modelo possui **28 entidades**. O dicionário completo (tipos, tamanhos, nulidade e descrições) está em [`Dicionario_de_Dados_Clinica.xlsx`](Dicionario_de_Dados_Clinica.xlsx).
 
-Laboratorio_Externo (0,N) --- Processado_por --- Exame (1,N)
+### 8.1 Entidades
 
-Exame (1,N) --- gera --- Resultado_Exame (1,1)
+| Grupo | Entidades |
+|---|---|
+| **Pessoas** | `PESSOA`, `ENDERECO_PESSOA`, `TELEFONE_PESSOA`, `PACIENTE`, `FUNCIONARIO`, `MEDICO` |
+| **Qualificação médica** | `ESPECIALIDADE`, `MEDICO_ESPECIALIDADE` |
+| **Saúde da paciente** | `ALERGIA`, `PACIENTE_ALERGIA` |
+| **Convênios** | `CONVENIO`, `PACIENTE_CONVENIO` |
+| **Agenda e atendimento** | `SALA`, `AGENDA`, `CONSULTA`, `PAGAMENTO` |
+| **Acompanhamento** | `LEMBRETE`, `FOLLOW_UP` |
+| **Prontuário** | `PRONTUARIO`, `EVOLUCAO_PRONTUARIO`, `CID` |
+| **Prescrição** | `MEDICAMENTO`, `PRESCRICAO`, `ITEM_PRESCRICAO` |
+| **Exames** | `TIPO_EXAME`, `LABORATORIO_EXTERNO`, `EXAME`, `RESULTADO_EXAME` |
 
-Medico (1,1) --- assinado_por --- Resultado_Exame (1,N)
+### 8.2 Diagrama entidade-relacionamento
 
-Exame (1,N) --- origina --- Prescricao (1,N)
+```mermaid
+erDiagram
+    PESSOA ||--|{ ENDERECO_PESSOA : possui
+    PESSOA ||--|{ TELEFONE_PESSOA : possui
+    PESSOA ||--o| PACIENTE : especializa
+    PESSOA ||--o| FUNCIONARIO : especializa
+    FUNCIONARIO ||--o| MEDICO : especializa
 
-Consulta (1,N) --- gera --- Pagamento (1,1)
+    MEDICO ||--|{ MEDICO_ESPECIALIDADE : possui
+    ESPECIALIDADE ||--o{ MEDICO_ESPECIALIDADE : classifica
 
-Consulta (1,1) --- gera --- Evolucao_Prontuario (1,1)
+    PACIENTE ||--o{ PACIENTE_ALERGIA : possui
+    ALERGIA ||--o{ PACIENTE_ALERGIA : classifica
+    PACIENTE ||--o{ PACIENTE_CONVENIO : tem
+    CONVENIO ||--o{ PACIENTE_CONVENIO : vincula
 
-Prescricao (1,1) --- contem --- Item_Prescricao (1,N)
+    MEDICO ||--o{ AGENDA : disponibiliza
+    SALA ||--o{ AGENDA : reserva
+    PACIENTE ||--o{ CONSULTA : agenda
+    MEDICO ||--o{ CONSULTA : atende
+    SALA ||--o{ CONSULTA : ocorre_em
+    AGENDA ||--o{ CONSULTA : ocupa
+    CONVENIO |o--o{ CONSULTA : cobre
+    CONSULTA ||--o{ PAGAMENTO : gera
+    CONSULTA ||--o{ LEMBRETE : envia
+    CONSULTA ||--o| FOLLOW_UP : gera
 
-Medicamento (0,N) --- Compõe --- Item_Prescricao (1,1)
+    PACIENTE ||--|| PRONTUARIO : possui
+    PRONTUARIO ||--o{ EVOLUCAO_PRONTUARIO : registra
+    CONSULTA ||--o| EVOLUCAO_PRONTUARIO : gera
+    CID |o--o{ EVOLUCAO_PRONTUARIO : classifica
 
-#  Etapa 14 — Relacionamentos N\:N
+    CONSULTA ||--o{ PRESCRICAO : origina
+    PRESCRICAO ||--|{ ITEM_PRESCRICAO : contem
+    MEDICAMENTO ||--o{ ITEM_PRESCRICAO : compoe
 
-O relacionamento **N\:N principal** identificado no modelo é:
+    CONSULTA ||--o{ EXAME : solicita
+    PACIENTE ||--o{ EXAME : realiza
+    TIPO_EXAME ||--o{ EXAME : classifica
+    FUNCIONARIO |o--o{ EXAME : realizado_por
+    LABORATORIO_EXTERNO |o--o{ EXAME : processa
+    EXAME ||--o| RESULTADO_EXAME : gera
+    MEDICO ||--o{ RESULTADO_EXAME : assinado_por
 
-```text
-MEDICO ↔ ESPECIALIDADE
-
+    PESSOA {
+        int id_pessoa PK
+        varchar cpf UK
+        varchar nome
+        varchar sobrenome
+        varchar sexo
+        varchar email
+        date data_nascimento
+    }
+    ENDERECO_PESSOA {
+        int id_endereco PK
+        int id_pessoa FK
+        varchar logradouro
+        varchar numero
+        varchar bairro
+        varchar cidade
+        varchar estado
+        varchar cep
+        varchar complemento
+    }
+    TELEFONE_PESSOA {
+        int id_telefone PK
+        int id_pessoa FK
+        varchar numero
+    }
+    PACIENTE {
+        int id_paciente PK
+        int id_pessoa FK, UK
+        varchar tipo_sanguineo
+    }
+    FUNCIONARIO {
+        int id_funcionario PK
+        int id_pessoa FK, UK
+        varchar cargo
+        date data_contratacao
+    }
+    MEDICO {
+        int id_medico PK
+        int id_funcionario FK, UK
+        varchar crm UK
+    }
+    ESPECIALIDADE {
+        int id_especialidade PK
+        varchar nome
+    }
+    MEDICO_ESPECIALIDADE {
+        int id_medico PK, FK
+        int id_especialidade PK, FK
+        varchar rqe
+    }
+    ALERGIA {
+        int id_alergia PK
+        varchar descricao
+    }
+    PACIENTE_ALERGIA {
+        int id_paciente PK, FK
+        int id_alergia PK, FK
+        varchar gravidade
+        date data_identificacao
+    }
+    CONVENIO {
+        int id_convenio PK
+        varchar nome
+        varchar registro_ans
+        varchar telefone_contato
+    }
+    PACIENTE_CONVENIO {
+        int id_paciente PK, FK
+        int id_convenio PK, FK
+        varchar numero_carteirinha
+        date data_inicio
+        date data_validade
+        boolean ativo
+    }
+    SALA {
+        int id_sala PK
+        varchar numero
+        varchar andar
+    }
+    AGENDA {
+        int id_horario PK
+        int id_medico FK
+        int id_sala FK
+        date data
+        time hora_inicio
+        time hora_fim
+        varchar status
+    }
+    CONSULTA {
+        int id_consulta PK
+        int id_paciente FK
+        int id_medico FK
+        int id_sala FK
+        int id_convenio FK
+        int id_horario FK
+        datetime data_hora
+        varchar tipo_consulta
+        varchar status
+        decimal valor
+        text observacoes
+    }
+    PAGAMENTO {
+        int id_pagamento PK
+        int id_consulta FK
+        decimal valor
+        varchar forma_pagamento
+        date data_pagamento
+        varchar status
+    }
+    PRONTUARIO {
+        int id_prontuario PK
+        int id_paciente FK, UK
+        date data_abertura
+        text sintomas
+    }
+    CID {
+        varchar cod_cid PK
+        varchar descricao
+        varchar categoria
+    }
+    EVOLUCAO_PRONTUARIO {
+        int id_evolucao PK
+        int id_prontuario FK
+        int id_consulta FK, UK
+        date data
+        varchar queixa_principal
+        text diagnostico
+        varchar cod_cid FK
+        text conduta
+    }
+    MEDICAMENTO {
+        int id_medicamento PK
+        varchar nome
+        varchar principio_ativo
+        varchar fabricante
+        varchar tarja
+    }
+    PRESCRICAO {
+        int id_prescricao PK
+        int id_consulta FK
+        date data_emissao
+        date validade
+    }
+    ITEM_PRESCRICAO {
+        int id_prescricao PK, FK
+        int id_medicamento PK, FK
+        varchar posologia
+        varchar dosagem
+        varchar duracao_tratamento
+    }
+    TIPO_EXAME {
+        int id_tipo_exame PK
+        varchar nome
+        decimal preco_padrao
+        text preparo_necessario
+    }
+    LABORATORIO_EXTERNO {
+        int id_laboratorio PK
+        varchar nome
+        varchar cnpj
+        varchar telefone
+    }
+    EXAME {
+        int id_exame PK
+        int id_consulta FK
+        int id_tipo_exame FK
+        int id_paciente FK
+        int id_funcionario_responsavel FK
+        int id_laboratorio_externo FK
+        date data_solicitacao
+        date data_realizacao
+        varchar status
+    }
+    RESULTADO_EXAME {
+        int id_resultado PK
+        int id_exame FK, UK
+        int id_medico FK
+        date data_resultado
+        text laudo
+        varchar arquivo_anexo
+    }
+    LEMBRETE {
+        int id_lembrete PK
+        int id_consulta FK
+        varchar tipo
+        datetime data_envio
+        varchar canal
+        boolean confirmado
+    }
+    FOLLOW_UP {
+        int id_follow_up PK
+        int id_consulta FK, UK
+        date data_prevista
+        date data_realizacao
+        varchar canal
+        text evolucao_sintomas
+        varchar adesao_tratamento
+        text duvidas
+        varchar status
+    }
 ```
 
-Esse relacionamento é resolvido através da tabela associativa:
+> O diagrama editável está em [`Diagrama clínica.drawio`](Diagrama%20cl%C3%ADnica.drawio) e pode ser aberto no [diagrams.net](https://app.diagrams.net).
 
-```text
-MEDICO_ESPECIALIDADE
+### 8.3 Relacionamentos e cardinalidades
 
-```
+Notação: `(mín, máx)` de cada lado, lida a partir da entidade indicada.
 
-A tabela possui:
+| Entidade A | Cardinalidade A | Relacionamento | Cardinalidade B | Entidade B | FK |
+|---|---|---|---|---|---|
+| PESSOA | (1,1) | possui | (1,N) | ENDERECO_PESSOA | `ENDERECO_PESSOA.id_pessoa` |
+| PESSOA | (1,1) | possui | (1,N) | TELEFONE_PESSOA | `TELEFONE_PESSOA.id_pessoa` |
+| PESSOA | (1,1) | especializa | (0,1) | PACIENTE | `PACIENTE.id_pessoa` |
+| PESSOA | (1,1) | especializa | (0,1) | FUNCIONARIO | `FUNCIONARIO.id_pessoa` |
+| FUNCIONARIO | (1,1) | especializa | (0,1) | MEDICO | `MEDICO.id_funcionario` |
+| MEDICO | (1,1) | possui | (1,N) | MEDICO_ESPECIALIDADE | `MEDICO_ESPECIALIDADE.id_medico` |
+| ESPECIALIDADE | (1,1) | classifica | (0,N) | MEDICO_ESPECIALIDADE | `MEDICO_ESPECIALIDADE.id_especialidade` |
+| PACIENTE | (1,1) | possui | (0,N) | PACIENTE_ALERGIA | `PACIENTE_ALERGIA.id_paciente` |
+| ALERGIA | (1,1) | classifica | (0,N) | PACIENTE_ALERGIA | `PACIENTE_ALERGIA.id_alergia` |
+| PACIENTE | (1,1) | tem | (0,N) | PACIENTE_CONVENIO | `PACIENTE_CONVENIO.id_paciente` |
+| CONVENIO | (1,1) | vincula | (0,N) | PACIENTE_CONVENIO | `PACIENTE_CONVENIO.id_convenio` |
+| MEDICO | (1,1) | disponibiliza | (0,N) | AGENDA | `AGENDA.id_medico` |
+| SALA | (1,1) | reserva | (0,N) | AGENDA | `AGENDA.id_sala` |
+| PACIENTE | (1,1) | agenda | (0,N) | CONSULTA | `CONSULTA.id_paciente` |
+| MEDICO | (1,1) | atende | (0,N) | CONSULTA | `CONSULTA.id_medico` |
+| SALA | (1,1) | ocorre em | (0,N) | CONSULTA | `CONSULTA.id_sala` |
+| AGENDA | (1,1) | ocupa | (0,N) | CONSULTA | `CONSULTA.id_horario` |
+| CONVENIO | (0,1) | cobre | (0,N) | CONSULTA | `CONSULTA.id_convenio` (opcional) |
+| CONSULTA | (1,1) | gera | (0,N) | PAGAMENTO | `PAGAMENTO.id_consulta` |
+| CONSULTA | (1,1) | envia | (0,N) | LEMBRETE | `LEMBRETE.id_consulta` |
+| CONSULTA | (1,1) | gera | (0,1) | FOLLOW_UP | `FOLLOW_UP.id_consulta` (único) |
+| PACIENTE | (1,1) | possui | (1,1) | PRONTUARIO | `PRONTUARIO.id_paciente` (único) |
+| PRONTUARIO | (1,1) | registra | (0,N) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_prontuario` |
+| CONSULTA | (1,1) | gera | (0,1) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_consulta` |
+| CID | (0,1) | classifica | (0,N) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.cod_cid` (opcional) |
+| CONSULTA | (1,1) | origina | (0,N) | PRESCRICAO | `PRESCRICAO.id_consulta` |
+| PRESCRICAO | (1,1) | contém | (1,N) | ITEM_PRESCRICAO | `ITEM_PRESCRICAO.id_prescricao` |
+| MEDICAMENTO | (1,1) | compõe | (0,N) | ITEM_PRESCRICAO | `ITEM_PRESCRICAO.id_medicamento` |
+| CONSULTA | (1,1) | solicita | (0,N) | EXAME | `EXAME.id_consulta` |
+| PACIENTE | (1,1) | realiza | (0,N) | EXAME | `EXAME.id_paciente` |
+| TIPO_EXAME | (1,1) | classifica | (0,N) | EXAME | `EXAME.id_tipo_exame` |
+| FUNCIONARIO | (0,1) | realizado por | (0,N) | EXAME | `EXAME.id_funcionario_responsavel` (opcional) |
+| LABORATORIO_EXTERNO | (0,1) | processa | (0,N) | EXAME | `EXAME.id_laboratorio_externo` (opcional) |
+| EXAME | (1,1) | gera | (0,1) | RESULTADO_EXAME | `RESULTADO_EXAME.id_exame` |
+| MEDICO | (1,1) | assinado por | (0,N) | RESULTADO_EXAME | `RESULTADO_EXAME.id_medico` |
 
-```text
-id_medico (FK)
-id_especialidade (FK)
-rqe
+### 8.4 Relacionamentos N:N e entidades associativas
 
-```
+O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades associativas com **chave primária composta**:
 
-O atributo `rqe` pertence ao relacionamento porque representa o registro de qualificação daquele médico naquela especialidade específica.
+| Relacionamento N:N | Entidade associativa | PK composta | Atributos próprios | Justificativa |
+|---|---|---|---|---|
+| MEDICO ↔ ESPECIALIDADE | `MEDICO_ESPECIALIDADE` | `id_medico` + `id_especialidade` | `rqe` | O RQE é o registro do médico **naquela** especialidade; não pertence só ao médico nem só à especialidade. |
+| PACIENTE ↔ ALERGIA | `PACIENTE_ALERGIA` | `id_paciente` + `id_alergia` | `gravidade`, `data_identificacao` | A mesma alergia pode ter gravidades diferentes em pacientes diferentes. |
+| PACIENTE ↔ CONVENIO | `PACIENTE_CONVENIO` | `id_paciente` + `id_convenio` | `numero_carteirinha`, `data_inicio`, `data_validade`, `ativo` | Carteirinha e vigência pertencem ao vínculo, não ao convênio. |
+| PRESCRICAO ↔ MEDICAMENTO | `ITEM_PRESCRICAO` | `id_prescricao` + `id_medicamento` | `posologia`, `dosagem`, `duracao_tratamento` | O mesmo medicamento tem dosagens diferentes em prescrições diferentes. |
 
----
+### 8.5 Restrições de integridade
 
-# Etapa 15 — Entidades Associativas
+| Restrição | Onde | Regra atendida |
+|---|---|---|
+| `UNIQUE (cpf)` | PESSOA | RN01 |
+| `UNIQUE (id_pessoa)` | PACIENTE, FUNCIONARIO | RN02 |
+| `UNIQUE (id_funcionario)`, `UNIQUE (crm)` | MEDICO | RN03 |
+| `UNIQUE (id_paciente)` | PRONTUARIO | RN17 |
+| `UNIQUE (id_consulta)` | EVOLUCAO_PRONTUARIO | RN18 (uma evolução por consulta) |
+| `UNIQUE (id_exame)` | RESULTADO_EXAME | RN22 (um resultado por exame) |
+| `UNIQUE (id_consulta)` | FOLLOW_UP | RN23 (um follow-up por consulta) |
+| `UNIQUE (id_medico, data, hora_inicio)` | AGENDA | RN10 |
+| `CHECK (hora_fim > hora_inicio)` | AGENDA | Consistência do horário |
+| `NOT NULL (data_validade)` | PACIENTE_CONVENIO | RN05 |
 
-## PACIENTE — POSSUI — ALERGIA
+**Domínios de status**
 
-Relacionamento realizado através da entidade associativa:
-
-**PACIENTE_ALERGIA**
-
-Possui atributos próprios:
-
-- `gravidade`
-- `data_identificacao`
-
-### Justificativa
-
-Gravidade e data de identificação não pertencem somente ao paciente nem somente à alergia.
-
-Elas descrevem aquela alergia específica daquele paciente.
-
-Outro paciente pode possuir a mesma alergia com uma gravidade diferente.
-
----
-
-## PACIENTE — VINCULA — CONVENIO
-
-Relacionamento realizado através da entidade associativa:
-
-**PACIENTE_CONVENIO**
-
-Possui atributos próprios:
-
-- `numero_carteirinha`
-- `data_inicio`
-- `data_validade`
-- `ativo`
-
-### Justificativa
-
-O número da carteirinha e as datas de validade pertencem ao vínculo entre aquele paciente e aquele convênio.
-
-O mesmo convênio possui carteirinhas diferentes para pacientes diferentes.
-
----
-
-## MEDICO — POSSUI — ESPECIALIDADE
-
-Relacionamento realizado através da entidade associativa:
-
-**MEDICO_ESPECIALIDADE**
-
-Possui atributo próprio:
-
-- `rqe`
-
-### Justificativa
-
-O RQE é o registro daquele médico especificamente naquela especialidade.
-
-Não faz sentido colocar esse campo somente na tabela `MEDICO`, pois ele pode mudar de acordo com a especialidade.
-
-Também não deve ficar na tabela `ESPECIALIDADE`, pois ela é genérica e não pertence a um médico específico.
+| Campo | Valores |
+|---|---|
+| `AGENDA.status` | disponivel, reservado, ocupado, bloqueado |
+| `CONSULTA.status` | agendada, confirmada, realizada, cancelada, remarcada, falta |
+| `PAGAMENTO.status` | pendente, pago, estornado (`data_pagamento` fica nula enquanto pendente) |
+| `LEMBRETE.tipo` | aviso, confirmacao_presenca |
+| `FOLLOW_UP.status` | pendente, realizado, sem retorno |
 
 ---
 
-## PRESCRICAO — COMPÕE — MEDICAMENTO
+## 9. Decisões de modelagem
 
-Relacionamento realizado através da entidade associativa:
+**Generalização de PESSOA.** Os dados comuns (CPF, nome, sobrenome, sexo, e-mail e data de nascimento) ficam em `PESSOA`, especializada em `PACIENTE` e `FUNCIONARIO`. Isso evita cadastro duplicado: uma médica que também é paciente da clínica tem um único registro de pessoa. A cardinalidade `(0,1)` do lado da pessoa indica que ela pode não exercer nenhum dos papéis; o `(1,1)` do outro lado garante que todo paciente ou funcionário seja uma pessoa.
 
-**ITEM_PRESCRICAO**
+**MEDICO como especialização de FUNCIONARIO.** Todo médico é contratado pela clínica, então herda `cargo` e `data_contratacao` de `FUNCIONARIO` e acrescenta apenas o `crm`. Com isso o CRM deixa de existir como campo opcional em `FUNCIONARIO` e fica em um único lugar.
 
-Possui atributos próprios:
+**Endereço e telefone em tabelas próprias.** Uma pessoa pode ter vários endereços e telefones; colocá-los em `PESSOA` obrigaria a limitar a quantidade ou a criar colunas repetidas.
 
-- `posologia`
-- `dosagem`
-- `duracao_tratamento`
+**AGENDA separada de CONSULTA.** `AGENDA` representa o horário que o médico disponibiliza; `CONSULTA` representa o atendimento marcado com a paciente. Essa separação permite que a IA busque somente os horários com `status` livre e ofereça as 3 opções previstas na RN11. A consulta aponta para o horário que ocupa (`CONSULTA.id_horario`); ao confirmar o pagamento, o horário passa a `ocupado` (RN12). A ligação é `(0,N)` do lado da consulta para que um horário liberado por cancelamento possa ser remarcado sem apagar o histórico.
 
-### Justificativa
+**Lembretes e follow-up registrados.** `LEMBRETE` guarda cada mensagem enviada pela IA e a resposta de confirmação de presença (RN15), base para medir comparecimento. `FOLLOW_UP` nasce com a data prevista de 1 semana após a consulta e só é concluído quando o profissional registra o contato, tirando o acompanhamento da memória do profissional (problema 1, RN23).
 
-A posologia e a dosagem valem para aquele medicamento dentro daquela prescrição específica.
+**Convênio opcional na consulta.** `CONSULTA.id_convenio` aceita nulo para permitir atendimentos particulares (RN07).
 
-O mesmo medicamento pode possuir dosagens diferentes em prescrições diferentes.
+**PAGAMENTO vinculado à CONSULTA.** Resolve o problema 4: toda cobrança fica ligada ao atendimento que a originou, e a clínica passa a ter histórico financeiro por consulta. A relação é `(0,N)` porque uma consulta coberta por convênio pode não gerar pagamento direto e uma consulta particular pode ter mais de uma tentativa (ex.: pagamento recusado e depois aprovado).
 
----
+**Prontuário único com várias evoluções.** `PRONTUARIO` representa o histórico da paciente (um por paciente) e `EVOLUCAO_PRONTUARIO` registra cada atendimento, resolvendo o problema 2.
 
-**Responsável:** Gabriel Reis  
-**Data:** 24/09/2026 — 21:40
+**CID como tabela de referência.** O código CID-10 deixou de ser texto livre e passou a ser FK para `CID`. Isso padroniza os diagnósticos e permite relatórios por doença (ex.: quantas pacientes com endometriose).
 
----
+**TIPO_EXAME e LABORATORIO_EXTERNO separados.** Evitam repetir nome, preço e preparo a cada solicitação. O laboratório é opcional porque nem todo exame é feito fora da clínica.
 
-# Etapa 18 — Justificativa das Principais Decisões
-
-## Generalização de Pessoa em Paciente, Médico e Funcionário
-
-Decidimos criar a tabela `PESSOA` com os dados comuns:
-
-- `CPF`
-- `nome`
-- `sobrenome`
-- `sexo`
-- `e-mail`
-
-E ligar a ela as tabelas:
-
-- `PACIENTE`
-- `MEDICO`
-- `FUNCIONARIO`
-
-com cardinalidade `(0,1)` do lado de Pessoa e `(1,1)` do lado de cada especialização.
-
-Fizemos assim porque a regra de negócio diz que toda pessoa possui CPF único e que um paciente ou um médico está associado a apenas uma pessoa.
-
-Sem isso, os mesmos dados seriam repetidos em três tabelas.
-
-Uma médica que também fosse paciente da clínica poderia acabar tendo dois cadastros.
-
-O `(0,1)` existe porque uma pessoa cadastrada pode não ser nenhum dos três papéis.
-
-O `(1,1)` existe porque todo paciente, médico ou funcionário precisa ser uma pessoa.
+**Resultado assinado por médico.** `RESULTADO_EXAME.id_medico` identifica o responsável pelo laudo, atendendo à exigência de rastreabilidade.
 
 ---
 
-## Endereço e telefone em tabelas separadas
+## 10. Pendências e próximos passos
 
-As tabelas `ENDERECO_PESSOA` e `TELEFONE_PESSOA` ficaram fora de `PESSOA` porque uma pessoa pode ter mais de um endereço e mais de um telefone.
+### Pontos a validar com a clínica
 
-Por isso:
+- [ ] Quais são os setores da clínica?
+- [ ] Um médico pode ter mais de uma especialidade? (RN04)
+- [ ] Uma paciente pode ter mais de um convênio ativo ao mesmo tempo? (RN05)
+- [ ] Toda prescrição precisa ter ao menos um medicamento? (RN19)
+- [ ] O follow-up pode ser disparado automaticamente pela IA, ou só o profissional confirma?
+- [ ] Qual é a política de cancelamento (prazo mínimo, reembolso e multa)?
 
-- Cada endereço ou telefone pertence a uma única pessoa.
-- Uma pessoa pode possuir vários endereços ou telefones.
+### Evoluções previstas no modelo
 
-Se colocássemos esses campos diretamente em `PESSOA`, teríamos que limitar a um único endereço ou telefone ou criar colunas repetidas.
+- [ ] **Usuários e auditoria:** tabelas de perfil de acesso e log de alterações (requisitos de segurança).
+- [ ] **Cancelamento:** campos de prazo, reembolso e multa, após a clínica definir a política.
 
----
+### Histórico de revisões do modelo
 
-## Médico e Especialidade como N:N
-
-Um médico pode ter uma ou mais especialidades e uma especialidade pode ser exercida por vários médicos.
-
-Portanto, o relacionamento é N:N.
-
-Esse relacionamento foi resolvido pela tabela:
-
-**MEDICO_ESPECIALIDADE**
-
-O `RQE` ficou nessa tabela porque o registro de qualificação de especialista pertence ao médico naquela especialidade específica.
-
-Em `MEDICO`, ele não caberia porque pode mudar de uma especialidade para outra.
-
-Em `ESPECIALIDADE`, também não caberia porque ela é genérica e não pertence a nenhum médico específico.
+| Revisão | Alterações |
+|---|---|
+| Diário AL05 | Inclusão do CID como tabela de referência para os diagnósticos |
+| Diário AL06 | Auditoria do modelo lógico: PKs, FKs e entidades associativas revisadas |
+| Revisão de consistência | README, dicionário, DER e fluxograma alinhados; `MEDICO` passa a especializar `FUNCIONARIO`; novas tabelas `FOLLOW_UP` e `LEMBRETE`; FK `CONSULTA.id_horario`; `LABORATORIO_EXTERNO` e `CID` incluídos no DER; cardinalidades e restrições corrigidas |
 
 ---
 
-## Paciente e Alergia com gravidade e data no vínculo
+## 11. Estrutura do repositório
 
-Um paciente pode ter várias alergias e a mesma alergia pode aparecer em vários pacientes.
-
-Por isso utilizamos:
-
-**PACIENTE_ALERGIA**
-
-Os atributos:
-
-- `gravidade`
-- `data_identificacao`
-
-ficam nessa tabela porque descrevem aquela alergia naquele paciente.
-
-Outro paciente pode possuir a mesma alergia com gravidade diferente.
-
-A cardinalidade `(0,N)` do paciente existe porque ele pode não possuir nenhuma alergia registrada.
+| Arquivo | Conteúdo |
+|---|---|
+| `README.md` | Documentação do projeto (este arquivo) |
+| `Diagrama clínica.drawio` | Diagrama entidade-relacionamento editável |
+| `Dicionario_de_Dados_Clinica.xlsx` | Dicionário de dados completo e resumo das entidades |
+| `Fluxograma.drawio.xml` | Fluxograma do processo de atendimento |
+| `DIARIO_DE_BORDO_AL05.pdf` | Diário de bordo da aula 5 — modelagem conceitual avançada |
+| `DIARIO_DE_BORDO_AL06.pdf` | Diário de bordo da aula 6 — auditoria do modelo lógico |
 
 ---
 
-## Paciente e Convênio com carteirinha e validade no vínculo
-
-A regra diz que um paciente pode possuir vários convênios, ou nenhum, e que o convênio deve possuir validade.
-
-Os dados:
-
-- `numero_carteirinha`
-- `data_inicio`
-- `data_validade`
-- `ativo`
-
-ficam em:
-
-**PACIENTE_CONVENIO**
-
-porque pertencem ao vínculo entre o paciente e o convênio.
-
-O mesmo convênio possui carteirinhas diferentes para pacientes diferentes.
-
-Na tabela `CONSULTA`, o `id_convenio` é opcional, pois uma consulta pode ou não estar vinculada a um convênio.
-
-Isso permite atender pacientes particulares.
-
----
-
-## Agenda separada de Consulta
-
-Decidimos ter duas tabelas:
-
-- `AGENDA`
-- `CONSULTA`
-
-porque:
-
-- `AGENDA` representa o horário que o médico disponibiliza.
-- `CONSULTA` representa o atendimento marcado com um paciente.
-
-A tabela `AGENDA` possui informações como:
-
-- `data`
-- `hora_inicio`
-- `hora_fim`
-- `sala`
-- `status`
-
-Essa separação permite que a IA consulte apenas os horários livres pelo campo `status` e ofereça sempre 3 opções, conforme a regra definida.
-
-Um médico pode ter vários horários `(0,N)`, mas cada horário pertence a um único médico `(1,1)`.
-
----
-
-## Consulta ligada a paciente, médico e sala
-
-A consulta possui cardinalidade `(1,1)` com:
-
-- `PACIENTE`
-- `MEDICO`
-- `SALA`
-
-porque a regra exige que toda consulta esteja associada a um paciente e a um médico e ocorra em uma sala disponível.
-
-Do lado de cada um deles é `(0,N)` porque um paciente recém-cadastrado, um médico novo ou uma sala nova ainda podem não possuir nenhuma consulta.
-
-Com o tempo, poderão possuir várias.
-
----
-
-## Pagamento vinculado à Consulta
-
-Criamos `PAGAMENTO` como uma tabela própria ligada à consulta.
-
-Essa decisão está relacionada ao problema identificado na Etapa 4: o pagamento ficar separado do agendamento.
-
-A regra estabelece que toda consulta deve possuir um pagamento e que ela só é confirmada depois dele ou da confirmação do convênio.
-
-Com o pagamento registrado junto da consulta, podemos armazenar:
-
-- `valor`
-- `forma_pagamento`
-- `data_pagamento`
-- `status`
-
-Isso permite que a clínica acompanhe as informações financeiras.
-
----
-
-## Prontuário único por paciente, com várias evoluções
-
-Cada paciente possui exatamente um prontuário `(1,1)`.
-
-O prontuário pode possuir várias evoluções `(1,N)`, sendo uma por consulta realizada.
-
-As tabelas são:
-
-- `PRONTUARIO`
-- `EVOLUCAO_PRONTUARIO`
-
-Separamos as duas porque:
-
-- O prontuário representa o histórico único do paciente.
-- A evolução representa as informações de cada atendimento.
-
-Na evolução ficam informações como:
-
-- `queixa_principal`
-- `diagnostico`
-- `CID-10`
-- `conduta`
-
-A ligação com `CONSULTA` existe porque toda consulta realizada deve gerar uma evolução no prontuário.
-
----
-
-## Prescrição e Medicamento com tabela associativa
-
-Uma prescrição está sempre vinculada a uma consulta e pode possuir vários medicamentos.
-
-Um medicamento também pode aparecer em várias prescrições.
-
-Por isso criamos:
-
-**ITEM_PRESCRICAO**
-
-Os atributos:
-
-- `posologia`
-- `dosagem`
-- `duracao_tratamento`
-
-ficam nessa tabela porque pertencem ao medicamento dentro daquela prescrição específica.
-
-O mesmo medicamento pode possuir dosagens diferentes em prescrições diferentes.
-
----
-
-## Exame ligado a consulta, paciente, tipo e laboratório
-
-O exame é solicitado em uma consulta e para um paciente.
-
-Ele também possui um tipo:
-
-**TIPO_EXAME**
-
-Deixamos `TIPO_EXAME` separado para evitar repetição de informações como:
-
-- `nome`
-- `preco_padrao`
-- `preparo_necessario`
-
-a cada solicitação.
-
-O laboratório externo é opcional porque a regra permite que o exame seja realizado em laboratório externo.
-
-Cada exame realizado gera um resultado, que é assinado por um médico responsável.
-
-Isso permite identificar quem foi responsável pelo laudo.
-
----
-
-# Estrutura das Etapas
-
-```text
-Etapa 1  → Identificação da Empresa
-Etapa 2  → Escolha da Empresa
-Etapa 3  → Processo Atual
-Etapa 4  → Problemas Identificados
-Etapa 5  → Cadastros Gerais
-Etapa 6  → Requisitos Não Funcionais
-Etapa 7  → Regras de Negócio
-Etapa 8  → Aprovações e Alterações
-Etapa 9  → Fluxogramas (não incluída)
-Etapa 10 → Entidades do Banco de Dados
-Etapa 11 → Dicionário de Dados
-Etapa 12 → Relacionamentos
-Etapa 13 → Cardinalidades
-Etapa 14 → Relacionamento N:N
-Etapa 15 → Entidades Associativas
-Etapa 16 → Não consta no material
-Etapa 17 → Não consta no material
-Etapa 18 → Justificativa das Principais Decisões
+## 12. Mapa das etapas da disciplina
+
+| Etapa | Tema | Seção |
+|---|---|---|
+| 1 | Identificação da empresa | [1. Contexto do negócio](#1-contexto-do-negócio) |
+| 2 | Escolha da empresa | [1. Contexto do negócio](#1-contexto-do-negócio) |
+| 3 | Processo atual | [2. Processo atual](#2-processo-atual) |
+| 4 | Problemas identificados | [3. Problemas identificados](#3-problemas-identificados) |
+| 5 | Cadastros gerais | [4. Requisitos funcionais](#4-requisitos-funcionais) |
+| 6 | Requisitos não funcionais | [5. Requisitos não funcionais](#5-requisitos-não-funcionais) |
+| 7 | Regras de negócio | [6. Regras de negócio](#6-regras-de-negócio) |
+| 8 | Aprovações e alterações | [7. Aprovações e permissões](#7-aprovações-e-permissões) |
+| 9 | Fluxograma | [2. Processo atual](#fluxograma) |
+| 10 | Entidades | [8.1 Entidades](#81-entidades) |
+| 11 | Dicionário de dados | [8.2 Diagrama ER](#82-diagrama-entidade-relacionamento) e planilha |
+| 12 | Relacionamentos | [8.3 Relacionamentos e cardinalidades](#83-relacionamentos-e-cardinalidades) |
+| 13 | Cardinalidades | [8.3 Relacionamentos e cardinalidades](#83-relacionamentos-e-cardinalidades) |
+| 14 | Relacionamentos N:N | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
+| 15 | Entidades associativas | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
+| 18 | Justificativa das decisões | [9. Decisões de modelagem](#9-decisões-de-modelagem) |
