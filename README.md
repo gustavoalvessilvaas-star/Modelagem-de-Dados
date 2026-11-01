@@ -634,3 +634,227 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 | 14 | Relacionamentos N:N | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
 | 15 | Entidades associativas | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
 | 18 | Justificativa das decisões | [9. Decisões de modelagem](#9-decisões-de-modelagem) |
+
+
+# Modelo Lógico Relacional --- Sistema de Gestão Clínica
+
+**Centro de Ginecologia Natural e Emocional**\
+**Versão:** documentação preliminar derivada do `DER_atualizado_etapa1.mmd`\
+**SGBD:** ainda não definido; tipos e restrições estão descritos de
+forma relacional genérica.
+
+## 1. Decisões adotadas nesta versão
+
+1.  `AGENDA` é a fonte única dos dados de médico, sala, data e
+    intervalo; `CONSULTA` referencia o horário por `id_horario`.
+2.  `EVOLUCAO_CID` resolve a relação N:N entre evolução e CID.
+3.  `EXAME` não armazena `id_paciente`, pois o paciente pode ser obtido
+    pela consulta. Isso evita duplicação e a possibilidade de exame
+    ligado a um paciente diferente daquele da consulta.
+4.  `EVOLUCAO_PRONTUARIO` não armazena `id_prontuario`: a evolução
+    pertence à consulta, e o prontuário do paciente pode ser obtido pela
+    relação consulta → paciente → prontuário. Isso elimina uma
+    redundância que poderia vincular a evolução ao prontuário de outra
+    pessoa.
+5.  `PACIENTE_CONVENIO` recebe uma chave própria `id_paciente_convenio`,
+    permitindo registrar períodos históricos distintos do mesmo convênio
+    para a mesma paciente.
+6.  `CONSULTA` referencia o vínculo paciente-convênio utilizado
+    (`id_paciente_convenio`), em vez de apenas o convênio. Assim,
+    pode-se validar que o plano pertence à paciente e estava válido na
+    data do atendimento.
+7.  A prescrição pode existir sem itens; se houver item, dosagem e
+    posologia são obrigatórias.
+8.  `FOLLOW_UP` é opcional e manual, limitado a um por consulta.
+9.  Os tipos são indicativos. A sintaxe final depende do SGBD escolhido.
+
+## 2. Esquema relacional
+
+Notação: **PK** = chave primária; **FK** = chave estrangeira; **UQ** =
+único; **NN** = obrigatório; **NULL** = opcional.
+
+### 2.1 Pessoas e cadastro
+
+**PESSOA** - `id_pessoa` --- inteiro, PK - `cpf` --- texto(11), NN, UQ -
+`nome` --- texto, NN - `sobrenome` --- texto, NN - `sexo` --- texto,
+opcional - `email` --- texto, opcional - `data_nascimento` --- data,
+opcional
+
+**ENDERECO_PESSOA** - `id_endereco` --- inteiro, PK - `id_pessoa` ---
+inteiro, FK → `PESSOA.id_pessoa`, NN - `logradouro` --- texto, NN -
+`numero` --- texto, NN - `bairro` --- texto, NN - `cidade` --- texto,
+NN - `estado` --- texto, NN - `cep` --- texto(8), NN - `complemento` ---
+texto, opcional
+
+**TELEFONE_PESSOA** - `id_telefone` --- inteiro, PK - `id_pessoa` ---
+inteiro, FK → `PESSOA.id_pessoa`, NN - `numero` --- texto, NN
+
+**PACIENTE** - `id_paciente` --- inteiro, PK - `id_pessoa` --- inteiro,
+FK → `PESSOA.id_pessoa`, NN, UQ - `tipo_sanguineo` --- texto, opcional
+
+**FUNCIONARIO** - `id_funcionario` --- inteiro, PK - `id_pessoa` ---
+inteiro, FK → `PESSOA.id_pessoa`, NN, UQ - `cargo` --- texto, NN -
+`data_contratacao` --- data, NN
+
+**MEDICO** - `id_medico` --- inteiro, PK - `id_funcionario` --- inteiro,
+FK → `FUNCIONARIO.id_funcionario`, NN, UQ - `crm` --- texto, NN, UQ
+
+### 2.2 Especialidades, alergias e convênios
+
+**ESPECIALIDADE** - `id_especialidade` --- inteiro, PK - `nome` ---
+texto, NN, UQ
+
+**MEDICO_ESPECIALIDADE** - `id_medico` --- inteiro, PK/FK →
+`MEDICO.id_medico`, NN - `id_especialidade` --- inteiro, PK/FK →
+`ESPECIALIDADE.id_especialidade`, NN - `rqe` --- texto, opcional - PK
+composta: (`id_medico`, `id_especialidade`)
+
+**ALERGIA** - `id_alergia` --- inteiro, PK - `descricao` --- texto, NN,
+UQ
+
+**PACIENTE_ALERGIA** - `id_paciente` --- inteiro, PK/FK →
+`PACIENTE.id_paciente`, NN - `id_alergia` --- inteiro, PK/FK →
+`ALERGIA.id_alergia`, NN - `gravidade` --- texto, opcional -
+`data_identificacao` --- data, opcional - PK composta: (`id_paciente`,
+`id_alergia`)
+
+**CONVENIO** - `id_convenio` --- inteiro, PK - `nome` --- texto, NN,
+UQ - `registro_ans` --- texto, opcional - `telefone_contato` --- texto,
+opcional
+
+**PACIENTE_CONVENIO** — `id_paciente_convenio` inteiro, PK; `id_paciente` inteiro, FK → `PACIENTE.id_paciente`, NN; `id_convenio` inteiro, FK → `CONVENIO.id_convenio`, NN; `numero_carteirinha` texto, NN; `data_inicio` data, NN; `data_validade` data, NN; `ativo` booleano, NN. Regra: no máximo um vínculo ativo por paciente; a implementação depende do SGBD. Para garantir que o vínculo referenciado pela consulta pertence ao mesmo paciente, é necessária uma FK composta ou validação equivalente.
+
+### 2.3 Agenda, consultas, pagamentos e lembretes
+
+**SALA** - `id_sala` --- inteiro, PK - `numero` --- texto, NN, UQ -
+`andar` --- texto, opcional
+
+**AGENDA** - `id_horario` --- inteiro, PK - `id_medico` --- inteiro, FK
+→ `MEDICO.id_medico`, NN - `id_sala` --- inteiro, FK → `SALA.id_sala`,
+NN - `data` --- data, NN - `hora_inicio` --- hora, NN - `hora_fim` ---
+hora, NN - `status` --- texto, NN - CHECK: `hora_fim > hora_inicio` -
+Regra: impedir sobreposição de intervalos para o mesmo médico ou sala.
+
+**CONSULTA** — `id_consulta` inteiro, PK; `id_paciente` inteiro, FK → `PACIENTE.id_paciente`, NN; `id_horario` inteiro, FK → `AGENDA.id_horario`, NN; `id_paciente_convenio` inteiro, FK → `PACIENTE_CONVENIO.id_paciente_convenio`, opcional; `tipo_consulta` texto, NN; `status` texto, NN; `valor` decimal(10,2), NN; `observacoes` texto, opcional. Regras: impedir sobreposição de consultas da mesma paciente, inclusive com médicos diferentes; só confirmar após pagamento ou convênio confirmados; validar que o vínculo de convênio pertence à paciente e está válido na data da consulta.
+
+**PAGAMENTO** - `id_pagamento` --- inteiro, PK - `id_consulta` ---
+inteiro, FK → `CONSULTA.id_consulta`, NN - `valor` --- decimal(10,2),
+NN - `forma_pagamento` --- texto, NN - `data_pagamento` --- data/hora,
+opcional - `status` --- texto, NN - Observação: a consulta pode ter
+múltiplos registros de pagamento/tentativas.
+
+**LEMBRETE** - `id_lembrete` --- inteiro, PK - `id_consulta` ---
+inteiro, FK → `CONSULTA.id_consulta`, NN - `tipo` --- texto, NN -
+`data_envio` --- data/hora, opcional - `canal` --- texto, NN -
+`confirmado` --- booleano, NN - Regra de processo: duas
+mensagens/lembretes por consulta conforme regra definida, incluindo um
+lembrete para confirmação de presença. A contagem deve ser validada por
+lógica transacional.
+
+**FOLLOW_UP** - `id_follow_up` --- inteiro, PK - `id_consulta` ---
+inteiro, FK → `CONSULTA.id_consulta`, NN, UQ - `data_prevista` --- data,
+opcional - `data_realizacao` --- data, opcional - `canal` --- texto,
+opcional - `evolucao_sintomas` --- texto, opcional - `adesao_tratamento`
+--- texto, opcional - `duvidas` --- texto, opcional - `status` ---
+texto, NN - Regra: não é criado automaticamente; no máximo um por
+consulta.
+
+### 2.4 Prontuário e diagnósticos
+
+**PRONTUARIO** - `id_prontuario` --- inteiro, PK - `id_paciente` ---
+inteiro, FK → `PACIENTE.id_paciente`, NN, UQ - `data_abertura` --- data,
+NN - `observacoes_gerais` --- texto, opcional - Regra: exatamente um
+prontuário por paciente.
+
+**EVOLUCAO_PRONTUARIO** — `id_evolucao` inteiro, PK; `id_consulta` inteiro, FK → `CONSULTA.id_consulta`, NN, UQ; `data` data, NN; `queixa_principal` texto, opcional; `diagnostico` texto, opcional; `conduta` texto, opcional. O prontuário correspondente é obtido por consulta → paciente → prontuário, sem duplicar `id_prontuario`. Cada consulta concluída deve gerar uma evolução; validar no fechamento do atendimento.
+
+**CID** - `cod_cid` --- texto, PK - `descricao` --- texto, NN -
+`categoria` --- texto, opcional
+
+**EVOLUCAO_CID** - `id_evolucao` --- inteiro, PK/FK →
+`EVOLUCAO_PRONTUARIO.id_evolucao`, NN - `cod_cid` --- texto, PK/FK →
+`CID.cod_cid`, NN - `observacoes` --- texto, opcional - PK composta:
+(`id_evolucao`, `cod_cid`)
+
+### 2.5 Prescrições e medicamentos
+
+**MEDICAMENTO** - `id_medicamento` --- inteiro, PK - `nome` --- texto,
+NN - `principio_ativo` --- texto, opcional - `fabricante` --- texto,
+opcional - `tarja` --- texto, opcional
+
+**PRESCRICAO** - `id_prescricao` --- inteiro, PK - `id_consulta` ---
+inteiro, FK → `CONSULTA.id_consulta`, NN - `data_emissao` --- data, NN -
+`validade` --- data, opcional
+
+**ITEM_PRESCRICAO** - `id_prescricao` --- inteiro, PK/FK →
+`PRESCRICAO.id_prescricao`, NN - `id_medicamento` --- inteiro, PK/FK →
+`MEDICAMENTO.id_medicamento`, NN - `posologia` --- texto, NN - `dosagem`
+--- texto, NN - `duracao_tratamento` --- texto, opcional - PK composta:
+(`id_prescricao`, `id_medicamento`) - Observação: essa PK impede repetir
+o mesmo medicamento em duas linhas da mesma prescrição. Se isso for
+permitido, adicionar `id_item_prescricao` como PK e manter as FKs
+separadas.
+
+### 2.6 Exames e resultados
+
+**TIPO_EXAME** - `id_tipo_exame` --- inteiro, PK - `nome` --- texto, NN,
+UQ - `preco_padrao` --- decimal(10,2), opcional - `preparo_necessario`
+--- texto, opcional
+
+**LABORATORIO_EXTERNO** - `id_laboratorio` --- inteiro, PK - `nome` ---
+texto, NN - `cnpj` --- texto(14), UQ, opcional - `telefone` --- texto,
+opcional
+
+**EXAME** — `id_exame` inteiro, PK; `id_consulta` inteiro, FK → `CONSULTA.id_consulta`, NN; `id_tipo_exame` inteiro, FK → `TIPO_EXAME.id_tipo_exame`, NN; `id_funcionario_responsavel` inteiro, FK → `FUNCIONARIO.id_funcionario`, opcional; `id_laboratorio_externo` inteiro, FK → `LABORATORIO_EXTERNO.id_laboratorio`, opcional; `data_solicitacao` data, NN; `data_realizacao` data, opcional; `status` texto, NN. O paciente é identificado pela consulta; não armazenar um segundo `id_paciente`.
+
+**RESULTADO_EXAME** - `id_resultado` --- inteiro, PK - `id_exame` ---
+inteiro, FK → `EXAME.id_exame`, NN, UQ - `id_medico` --- inteiro, FK →
+`MEDICO.id_medico`, NN - `data_resultado` --- data, NN - `laudo` ---
+texto, NN - `arquivo_anexo` --- texto, opcional - Regra: resultado é
+opcional até a realização do exame e deve ser assinado por médico.
+
+## 3. Restrições que precisam de implementação no banco ou na aplicação
+
+As chaves e os `CHECK` comuns não resolvem sozinhos todas as regras de
+negócio. A implementação final deve cobrir:
+
+-   Cada pessoa precisa ter pelo menos um endereço e um telefone.
+-   Médico, sala, data e intervalo da consulta devem corresponder ao
+    horário de agenda referenciado.
+-   Impedir sobreposição de agenda para médico e sala.
+-   Impedir sobreposição de consultas da mesma paciente.
+-   No máximo um convênio ativo por paciente.
+-   Confirmar consulta apenas após confirmação de pagamento ou convênio.
+-   Criar dois lembretes conforme a regra de negócio.
+-   Gerar evolução ao concluir consulta.
+-   Garantir que o vínculo paciente-convênio usado pertence à paciente e
+    é válido na data do atendimento.
+-   Não permitir alteração ou exclusão que quebre o histórico clínico.
+
+A técnica (índice parcial, restrição de exclusão, trigger ou validação
+transacional) deve ser definida após escolher o SGBD.
+
+## 4. Pontos pendentes para validar antes da normalização
+
+1.  **SGBD:** escolher PostgreSQL, MySQL ou outro; isso altera tipos,
+    índices e triggers.
+2.  **CRM:** definir se `crm` será apenas único ou se também será
+    validado por UF/formato.
+3.  **Prescrição:** confirmar se o mesmo medicamento pode aparecer mais
+    de uma vez na mesma prescrição. Se sim, usar chave própria para
+    `ITEM_PRESCRICAO`.
+4.  **Convênio em consulta particular:** `id_paciente_convenio` deve ser
+    nulo quando a consulta for particular; confirmar essa regra
+    operacional.
+5.  **Agenda:** definir se cada registro de `AGENDA` é um horário
+    reservado individual ou um intervalo de disponibilidade que pode
+    receber consultas de duração variável.
+6.  **Tipos de dados e domínios:** definir listas permitidas para
+    `status`, `tipo_consulta`, `forma_pagamento`, `canal`, `gravidade` e
+    `tarja`.
+
+## 5. Próxima etapa
+
+Depois de validar este modelo, realizar a **normalização até a 3ª Forma
+Normal (3FN)** e reconciliar as tabelas e atributos com o dicionário de
+dados. Só então gerar o SQL físico para o SGBD escolhido.
