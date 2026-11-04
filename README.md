@@ -112,50 +112,60 @@ O modelo proposto responde a cada um deles:
 
 ---
 
-## 4. Requisitos funcionais
-
+## 4. Requisitos funcionais 
 ### Cadastros
-
-| Cadastro | Dados registrados |
-|---|---|
-| **Pessoa** | Nome, sobrenome, CPF, e-mail, data de nascimento, endereços e telefones |
-| **Paciente** | Vínculo com a pessoa e tipo sanguíneo |
-| **Funcionário** | Vínculo com a pessoa, cargo e data de contratação |
-| **Médico** | Vínculo com o funcionário e CRM |
-| **Especialidade** | Nome da especialidade e RQE do médico em cada uma |
-| **Sala** | Número e andar |
-| **Convênio** | Nome, registro na ANS e telefone |
-| **Alergia** | Descrição, com gravidade e data de identificação por paciente |
-| **Medicamento** | Nome, princípio ativo, fabricante e tarja |
-| **Tipo de exame** | Nome, preço padrão e preparo necessário |
-| **Laboratório externo** | Nome, CNPJ e telefone |
-| **CID** | Código, descrição e categoria |
-
+ 
+| Código | Área | Requisito |
+|---|---|---|
+| RF01 | Pessoas | Cadastrar pessoa com nome, sobrenome, CPF, e-mail, data de nascimento, endereços e telefones. |
+| RF02 | Pacientes | Cadastrar paciente vinculado a uma pessoa, com tipo sanguíneo. |
+| RF03 | Funcionários | Cadastrar funcionário vinculado a uma pessoa, com cargo e data de contratação. |
+| RF04 | Médicos | Cadastrar médico vinculado a um funcionário, com CRM. |
+| RF05 | Especialidades | Cadastrar especialidade e registrar o RQE do médico em cada uma delas. |
+| RF06 | Salas | Cadastrar sala com número e andar. |
+| RF07 | Convênios | Cadastrar convênio com nome, registro na ANS e telefone. |
+| RF08 | Alergias | Cadastrar alergia com descrição e registrar, por paciente, a gravidade e a data de identificação. |
+| RF09 | Medicamentos | Cadastrar medicamento com nome, princípio ativo, fabricante e tarja. |
+| RF10 | Tipos de exame | Cadastrar tipo de exame com nome, preço padrão e preparo necessário. |
+| RF11 | Laboratórios externos | Cadastrar laboratório externo com nome, CNPJ e telefone. |
+| RF12 | CID | Cadastrar CID com código, descrição e categoria. |
+ 
 ### Operações
-
-- **Convênios:** vincular a paciente a um ou mais convênios, com número da carteirinha, data de início e validade.
-- **Agenda:** gerenciar os horários de cada médico (data, início, fim, sala e status) e consultar os horários livres.
-- **Consulta:** marcar consultas vinculando paciente, médico, sala, horário da agenda e, se houver, convênio, com data/hora, tipo e status.
-- **Lembretes:** registrar cada lembrete enviado pela IA (tipo, data, canal) e a confirmação de presença da paciente.
-- **Follow-up:** agendar o acompanhamento 1 semana após a consulta e registrar canal, evolução dos sintomas, adesão ao tratamento e dúvidas.
-- **Pagamento:** registrar valor, forma, data e status do pagamento de cada consulta.
-- **Prontuário:** abrir um prontuário por paciente e registrar uma evolução a cada consulta (queixa principal, diagnóstico, CID e conduta).
-- **Prescrição:** emitir prescrições vinculadas à consulta, com medicamento, posologia, dosagem e duração de cada item.
-- **Exames:** solicitar exames vinculados à consulta e à paciente, acompanhar datas e status, indicar o laboratório externo e registrar o resultado (laudo, anexo e médico responsável).
-
+ 
+| Código | Área | Requisito |
+|---|---|---|
+| RF13 | Convênios | Vincular a paciente a um ou mais convênios, com número da carteirinha, data de início e validade. |
+| RF14 | Agenda | Gerenciar os horários de cada médico (data, início, fim, sala e status) e consultar os horários livres. |
+| RF15 | Consultas | Marcar consulta vinculando paciente, médico, sala, horário da agenda e, se houver, convênio, com data/hora, tipo e status. |
+| RF16 | Lembretes | Registrar cada lembrete enviado pela IA (tipo, data e canal) e a confirmação de presença da paciente. |
+| RF17 | Follow-up | Agendar o acompanhamento 1 semana após a consulta e registrar canal, evolução dos sintomas, adesão ao tratamento e dúvidas. |
+| RF18 | Pagamentos | Registrar valor, forma, data e status do pagamento de cada consulta. |
+| RF19 | Prontuário | Abrir um prontuário por paciente e registrar uma evolução a cada consulta (queixa principal, diagnóstico, CID e conduta). |
+| RF20 | Prescrições | Emitir prescrições vinculadas à consulta, com medicamento, posologia, dosagem e duração de cada item. |
+| RF21 | Exames | Solicitar exames vinculados à consulta e à paciente, acompanhar datas e status, indicar o laboratório externo e registrar o resultado (laudo, anexo e médico responsável). |
+ 
 ---
-
+ 
 ## 5. Requisitos não funcionais
-
-| Categoria | Requisito |
-|---|---|
-| **Segurança** | Controle de acesso por perfil (médico, funcionário e paciente); proteção do prontuário e das prescrições; registro de auditoria de quem alterou o quê e quando |
-| **Privacidade (LGPD)** | Tratamento de dados sensíveis de saúde conforme a LGPD; a paciente pode solicitar seus próprios dados |
-| **Desempenho** | Histórico da paciente disponível em tempo adequado durante o atendimento; agendamento sem demora perceptível |
-| **Disponibilidade** | Agendamento disponível 24 horas; backup periódico para evitar perda do prontuário |
-| **Usabilidade** | Interface simples para o profissional durante a consulta; interação fácil com a IA de agendamento |
-| **Confiabilidade** | Agenda sempre sincronizada com o Google Calendar; sem duplicidade de horários; consulta só confirmada após o pagamento |
-| **Integração** | Google Calendar (agenda dos médicos) e sistema de pagamento (geração e envio automático de links) |
+ 
+| Código | Categoria | Requisito |
+|---|---|---|
+| RNF01 | Segurança | Controlar o acesso por perfil (médico, funcionário e paciente). |
+| RNF02 | Segurança | Proteger o prontuário e as prescrições. |
+| RNF03 | Segurança | Registrar auditoria de quem alterou o quê e quando. |
+| RNF04 | Privacidade (LGPD) | Tratar dados sensíveis de saúde conforme a LGPD. |
+| RNF05 | Privacidade (LGPD) | Permitir que a paciente solicite os próprios dados. |
+| RNF06 | Desempenho | Disponibilizar o histórico da paciente em tempo adequado durante o atendimento. |
+| RNF07 | Desempenho | Garantir agendamento sem demora perceptível. |
+| RNF08 | Disponibilidade | Manter o agendamento disponível 24 horas. |
+| RNF09 | Disponibilidade | Realizar backup periódico para evitar perda do prontuário. |
+| RNF10 | Usabilidade | Oferecer interface simples para o profissional durante a consulta. |
+| RNF11 | Usabilidade | Garantir interação fácil com a IA de agendamento. |
+| RNF12 | Confiabilidade | Manter a agenda sempre sincronizada com o Google Calendar. |
+| RNF13 | Confiabilidade | Impedir duplicidade de horários. |
+| RNF14 | Confiabilidade | Confirmar a consulta somente após o pagamento (ver RN13). |
+| RNF15 | Integração | Integrar com o Google Calendar para a agenda dos médicos. |
+| RNF16 | Integração | Integrar com o sistema de pagamento para geração e envio automático de links. |
 
 ---
 
