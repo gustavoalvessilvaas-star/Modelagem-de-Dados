@@ -118,7 +118,7 @@ O modelo proposto responde a cada um deles:
 
 | Cadastro | Dados registrados |
 |---|---|
-| **Pessoa** | Nome, sobrenome, CPF, sexo, e-mail, data de nascimento, endereços e telefones |
+| **Pessoa** | Nome, sobrenome, CPF, e-mail, data de nascimento, endereços e telefones |
 | **Paciente** | Vínculo com a pessoa e tipo sanguíneo |
 | **Funcionário** | Vínculo com a pessoa, cargo e data de contratação |
 | **Médico** | Vínculo com o funcionário e CRM |
