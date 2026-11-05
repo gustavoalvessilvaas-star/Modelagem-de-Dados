@@ -17,9 +17,6 @@ Projeto de **modelagem de banco de dados** para uma clínica de saúde da mulher
 7. [Aprovações e permissões](#7-aprovações-e-permissões)
 8. [Modelo de dados](#8-modelo-de-dados)
 9. [Decisões de modelagem](#9-decisões-de-modelagem)
-10. [Pendências e próximos passos](#10-pendências-e-próximos-passos)
-11. [Estrutura do repositório](#11-estrutura-do-repositório)
-12. [Mapa das etapas da disciplina](#12-mapa-das-etapas-da-disciplina)
 
 ---
 
@@ -47,7 +44,7 @@ Projeto de **modelagem de banco de dados** para uma clínica de saúde da mulher
 O agendamento e os lembretes já são automatizados por uma **IA de atendimento** sincronizada ao Google Calendar. Apenas o acompanhamento pós-consulta é manual.
 
 ```text
-Paciente → Agendamento (IA) → Pagamento → Lembretes → Consulta → Follow-up (1 semana)
+Paciente → Agendamento (IA) → Pagamento → Lembretes → Consulta → Acompanhamento (1 semana)
 ```
 
 | Etapa | Participantes | Gatilho | O que acontece | Informação gerada | Resultado |
@@ -56,7 +53,7 @@ Paciente → Agendamento (IA) → Pagamento → Lembretes → Consulta → Follo
 | **Pagamento** | Paciente e sistema de pagamento | Escolha do horário | A IA envia o link de pagamento e a política de cancelamento | Registro do pagamento | Consulta paga e confirmada |
 | **Lembretes** | IA e paciente | Proximidade da consulta | São enviados 3 lembretes, sendo um deles de confirmação de presença | Presença confirmada ou não | Paciente ciente da consulta |
 | **Consulta** | Paciente e profissional | Horário marcado | Atendimento clínico | Queixas, avaliação e plano de tratamento | Orientações ou protocolo definidos |
-| **Follow-up** | Profissional e paciente | 1 semana após a consulta | Contato presencial ou por telefone | Evolução, adesão ao tratamento e dúvidas | Tratamento acompanhado e ajustado |
+| **Acompanhamento** | Profissional e paciente | 1 semana após a consulta | Contato presencial ou por telefone | Evolução, adesão ao tratamento e dúvidas | Tratamento acompanhado e ajustado |
 
 ### Fluxograma
 
@@ -85,7 +82,7 @@ flowchart TD
     P --> S
     Q --> S
     R --> S
-    S --> T[Follow-up após 1 semana]
+    S --> T[Acompanhamento após 1 semana]
     T --> U[Verifica sintomas, adesão e dúvidas]
     U --> V([Fim])
 ```
@@ -96,7 +93,7 @@ flowchart TD
 
 | # | Problema | Consequência |
 |---|---|---|
-| 1 | Follow-up pós-consulta feito manualmente | Depende de o profissional lembrar; pode atrasar ou não acontecer |
+| 1 | Acompanhamento pós-consulta feito manualmente | Depende de o profissional lembrar; pode atrasar ou não acontecer |
 | 2 | Não há prontuário eletrônico integrado | Dados clínicos ficam dispersos e podem se perder |
 | 3 | Não há relatórios de agendamentos, faltas e cancelamentos | Difícil acompanhar o desempenho da clínica |
 | 4 | Pagamento e agendamento em sistemas separados | Risco de o pagamento não ficar vinculado à consulta |
@@ -105,16 +102,19 @@ O modelo proposto responde a cada um deles:
 
 | # | Como o modelo resolve |
 |---|---|
-| 1 | `FOLLOW_UP` registra a data prevista, a realização e o resultado de cada acompanhamento, permitindo cobrar os pendentes |
+| 1 | `ACOMPANHAMENTO` registra a data prevista, a realização e o resultado de cada acompanhamento, permitindo cobrar os pendentes |
 | 2 | `PRONTUARIO` e `EVOLUCAO_PRONTUARIO` centralizam o histórico clínico da paciente |
 | 3 | Os status de `CONSULTA` (incluindo `falta` e `remarcada`) e a tabela `LEMBRETE` permitem calcular comparecimento, faltas e remarcações |
 | 4 | `PAGAMENTO` fica vinculado à `CONSULTA` que o originou |
 
 ---
 
-## 4. Requisitos funcionais 
+## 4. Requisitos funcionais
+
+Cada requisito recebe um código (RF) para rastreabilidade, no mesmo formato das regras de negócio.
+
 ### Cadastros
- 
+
 | Código | Área | Requisito |
 |---|---|---|
 | RF01 | Pessoas | Cadastrar pessoa com nome, sobrenome, CPF, e-mail, data de nascimento, endereços e telefones. |
@@ -129,25 +129,25 @@ O modelo proposto responde a cada um deles:
 | RF10 | Tipos de exame | Cadastrar tipo de exame com nome, preço padrão e preparo necessário. |
 | RF11 | Laboratórios externos | Cadastrar laboratório externo com nome, CNPJ e telefone. |
 | RF12 | CID | Cadastrar CID com código, descrição e categoria. |
- 
+
 ### Operações
- 
+
 | Código | Área | Requisito |
 |---|---|---|
 | RF13 | Convênios | Vincular a paciente a um ou mais convênios, com número da carteirinha, data de início e validade. |
 | RF14 | Agenda | Gerenciar os horários de cada médico (data, início, fim, sala e status) e consultar os horários livres. |
 | RF15 | Consultas | Marcar consulta vinculando paciente, médico, sala, horário da agenda e, se houver, convênio, com data/hora, tipo e status. |
 | RF16 | Lembretes | Registrar cada lembrete enviado pela IA (tipo, data e canal) e a confirmação de presença da paciente. |
-| RF17 | Follow-up | Agendar o acompanhamento 1 semana após a consulta e registrar canal, evolução dos sintomas, adesão ao tratamento e dúvidas. |
+| RF17 | Acompanhamento | Agendar o acompanhamento 1 semana após a consulta e registrar canal, evolução dos sintomas, adesão ao tratamento e dúvidas. |
 | RF18 | Pagamentos | Registrar valor, forma, data e status do pagamento de cada consulta. |
 | RF19 | Prontuário | Abrir um prontuário por paciente e registrar uma evolução a cada consulta (queixa principal, diagnóstico, CID e conduta). |
 | RF20 | Prescrições | Emitir prescrições vinculadas à consulta, com medicamento, posologia, dosagem e duração de cada item. |
 | RF21 | Exames | Solicitar exames vinculados à consulta e à paciente, acompanhar datas e status, indicar o laboratório externo e registrar o resultado (laudo, anexo e médico responsável). |
- 
+
 ---
- 
+
 ## 5. Requisitos não funcionais
- 
+
 | Código | Categoria | Requisito |
 |---|---|---|
 | RNF01 | Segurança | Controlar o acesso por perfil (médico, funcionário e paciente). |
@@ -163,7 +163,7 @@ O modelo proposto responde a cada um deles:
 | RNF11 | Usabilidade | Garantir interação fácil com a IA de agendamento. |
 | RNF12 | Confiabilidade | Manter a agenda sempre sincronizada com o Google Calendar. |
 | RNF13 | Confiabilidade | Impedir duplicidade de horários. |
-| RNF14 | Confiabilidade | Confirmar a consulta somente após o pagamento (ver RN13). |
+| RNF14 | Confiabilidade | Confirmar a consulta somente após o pagamento ou a confirmação do convênio (ver RN13). |
 | RNF15 | Integração | Integrar com o Google Calendar para a agenda dos médicos. |
 | RNF16 | Integração | Integrar com o sistema de pagamento para geração e envio automático de links. |
 
@@ -195,7 +195,7 @@ O modelo proposto responde a cada um deles:
 | RN20 | Prescrição | Todo item de prescrição possui posologia e dosagem definidas. |
 | RN21 | Exames | Todo exame está vinculado a uma consulta e a uma paciente, e pode ser processado por um laboratório externo. |
 | RN22 | Exames | Todo exame realizado gera um resultado assinado por um médico. |
-| RN23 | Follow-up | Toda consulta gera um follow-up 1 semana depois, para verificar sintomas e adesão ao tratamento. |
+| RN23 | Acompanhamento | Toda consulta gera um acompanhamento 1 semana depois, para verificar sintomas e adesão ao tratamento. |
 
 ---
 
@@ -206,7 +206,7 @@ O modelo proposto responde a cada um deles:
 | Prontuário | Somente o médico responsável altera | Acesso restrito à equipe médica |
 | Dados cadastrais | Somente funcionários autorizados alteram | — |
 | Dados financeiros | Somente a administração da clínica acessa | — |
-| Follow-up | O profissional que atendeu confirma a realização | Prazo padrão de 1 semana |
+| Acompanhamento | O profissional que atendeu confirma a realização | Prazo padrão de 1 semana |
 | Dados próprios | A paciente acessa apenas os próprios dados | Direito garantido pela LGPD |
 
 ---
@@ -224,7 +224,7 @@ O modelo possui **28 entidades**. O dicionário completo (tipos, tamanhos, nulid
 | **Saúde da paciente** | `ALERGIA`, `PACIENTE_ALERGIA` |
 | **Convênios** | `CONVENIO`, `PACIENTE_CONVENIO` |
 | **Agenda e atendimento** | `SALA`, `AGENDA`, `CONSULTA`, `PAGAMENTO` |
-| **Acompanhamento** | `LEMBRETE`, `FOLLOW_UP` |
+| **Acompanhamento** | `LEMBRETE`, `ACOMPANHAMENTO` |
 | **Prontuário** | `PRONTUARIO`, `EVOLUCAO_PRONTUARIO`, `CID` |
 | **Prescrição** | `MEDICAMENTO`, `PRESCRICAO`, `ITEM_PRESCRICAO` |
 | **Exames** | `TIPO_EXAME`, `LABORATORIO_EXTERNO`, `EXAME`, `RESULTADO_EXAME` |
@@ -256,7 +256,7 @@ erDiagram
     CONVENIO |o--o{ CONSULTA : cobre
     CONSULTA ||--o{ PAGAMENTO : gera
     CONSULTA ||--o{ LEMBRETE : envia
-    CONSULTA ||--o| FOLLOW_UP : gera
+    CONSULTA ||--o| ACOMPANHAMENTO : gera
 
     PACIENTE ||--|| PRONTUARIO : possui
     PRONTUARIO ||--o{ EVOLUCAO_PRONTUARIO : registra
@@ -464,8 +464,8 @@ erDiagram
         varchar canal
         boolean confirmado
     }
-    FOLLOW_UP {
-        int id_follow_up PK
+    ACOMPANHAMENTO {
+        int id_acompanhamento PK
         int id_consulta FK, UK
         date data_prevista
         date data_realizacao
@@ -505,7 +505,7 @@ Notação: `(mín, máx)` de cada lado, lida a partir da entidade indicada.
 | CONVENIO | (0,1) | cobre | (0,N) | CONSULTA | `CONSULTA.id_convenio` (opcional) |
 | CONSULTA | (1,1) | gera | (0,N) | PAGAMENTO | `PAGAMENTO.id_consulta` |
 | CONSULTA | (1,1) | envia | (0,N) | LEMBRETE | `LEMBRETE.id_consulta` |
-| CONSULTA | (1,1) | gera | (0,1) | FOLLOW_UP | `FOLLOW_UP.id_consulta` (único) |
+| CONSULTA | (1,1) | gera | (0,1) | ACOMPANHAMENTO | `ACOMPANHAMENTO.id_consulta` (único) |
 | PACIENTE | (1,1) | possui | (1,1) | PRONTUARIO | `PRONTUARIO.id_paciente` (único) |
 | PRONTUARIO | (1,1) | registra | (0,N) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_prontuario` |
 | CONSULTA | (1,1) | gera | (0,1) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_consulta` |
@@ -542,7 +542,7 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 | `UNIQUE (id_paciente)` | PRONTUARIO | RN17 |
 | `UNIQUE (id_consulta)` | EVOLUCAO_PRONTUARIO | RN18 (uma evolução por consulta) |
 | `UNIQUE (id_exame)` | RESULTADO_EXAME | RN22 (um resultado por exame) |
-| `UNIQUE (id_consulta)` | FOLLOW_UP | RN23 (um follow-up por consulta) |
+| `UNIQUE (id_consulta)` | ACOMPANHAMENTO | RN23 (um acompanhamento por consulta) |
 | `UNIQUE (id_medico, data, hora_inicio)` | AGENDA | RN10 |
 | `CHECK (hora_fim > hora_inicio)` | AGENDA | Consistência do horário |
 | `NOT NULL (data_validade)` | PACIENTE_CONVENIO | RN05 |
@@ -555,7 +555,7 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 | `CONSULTA.status` | agendada, confirmada, realizada, cancelada, remarcada, falta |
 | `PAGAMENTO.status` | pendente, pago, estornado (`data_pagamento` fica nula enquanto pendente) |
 | `LEMBRETE.tipo` | aviso, confirmacao_presenca |
-| `FOLLOW_UP.status` | pendente, realizado, sem retorno |
+| `ACOMPANHAMENTO.status` | pendente, realizado, sem retorno |
 
 ---
 
@@ -569,7 +569,7 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 
 **AGENDA separada de CONSULTA.** `AGENDA` representa o horário que o médico disponibiliza; `CONSULTA` representa o atendimento marcado com a paciente. Essa separação permite que a IA busque somente os horários com `status` livre e ofereça as 3 opções previstas na RN11. A consulta aponta para o horário que ocupa (`CONSULTA.id_horario`); ao confirmar o pagamento, o horário passa a `ocupado` (RN12). A ligação é `(0,N)` do lado da consulta para que um horário liberado por cancelamento possa ser remarcado sem apagar o histórico.
 
-**Lembretes e follow-up registrados.** `LEMBRETE` guarda cada mensagem enviada pela IA e a resposta de confirmação de presença (RN15), base para medir comparecimento. `FOLLOW_UP` nasce com a data prevista de 1 semana após a consulta e só é concluído quando o profissional registra o contato, tirando o acompanhamento da memória do profissional (problema 1, RN23).
+**Lembretes e acompanhamento registrados.** `LEMBRETE` guarda cada mensagem enviada pela IA e a resposta de confirmação de presença (RN15), base para medir comparecimento. `ACOMPANHAMENTO` nasce com a data prevista de 1 semana após a consulta e só é concluído quando o profissional registra o contato, tirando o acompanhamento da memória do profissional (problema 1, RN23).
 
 **Convênio opcional na consulta.** `CONSULTA.id_convenio` aceita nulo para permitir atendimentos particulares (RN07).
 
@@ -584,67 +584,6 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 **Resultado assinado por médico.** `RESULTADO_EXAME.id_medico` identifica o responsável pelo laudo, atendendo à exigência de rastreabilidade.
 
 ---
-
-## 10. Pendências e próximos passos
-
-### Pontos a validar com a clínica
-
-- [ ] Quais são os setores da clínica?
-- [ ] Um médico pode ter mais de uma especialidade? (RN04)
-- [ ] Uma paciente pode ter mais de um convênio ativo ao mesmo tempo? (RN05)
-- [ ] Toda prescrição precisa ter ao menos um medicamento? (RN19)
-- [ ] O follow-up pode ser disparado automaticamente pela IA, ou só o profissional confirma?
-- [ ] Qual é a política de cancelamento (prazo mínimo, reembolso e multa)?
-
-### Evoluções previstas no modelo
-
-- [ ] **Usuários e auditoria:** tabelas de perfil de acesso e log de alterações (requisitos de segurança).
-- [ ] **Cancelamento:** campos de prazo, reembolso e multa, após a clínica definir a política.
-
-### Histórico de revisões do modelo
-
-| Revisão | Alterações |
-|---|---|
-| Diário AL05 | Inclusão do CID como tabela de referência para os diagnósticos |
-| Diário AL06 | Auditoria do modelo lógico: PKs, FKs e entidades associativas revisadas |
-| Revisão de consistência | README, dicionário, DER e fluxograma alinhados; `MEDICO` passa a especializar `FUNCIONARIO`; novas tabelas `FOLLOW_UP` e `LEMBRETE`; FK `CONSULTA.id_horario`; `LABORATORIO_EXTERNO` e `CID` incluídos no DER; cardinalidades e restrições corrigidas |
-
----
-
-## 11. Estrutura do repositório
-
-| Arquivo | Conteúdo |
-|---|---|
-| `README.md` | Documentação do projeto (este arquivo) |
-| `Diagrama clínica.drawio` | Diagrama entidade-relacionamento editável |
-| `Dicionario_de_Dados_Clinica.xlsx` | Dicionário de dados completo e resumo das entidades |
-| `Fluxograma.drawio.xml` | Fluxograma do processo de atendimento |
-| `DIARIO_DE_BORDO_AL05.pdf` | Diário de bordo da aula 5 — modelagem conceitual avançada |
-| `DIARIO_DE_BORDO_AL06.pdf` | Diário de bordo da aula 6 — auditoria do modelo lógico |
-
----
-
-## 12. Mapa das etapas da disciplina
-
-| Etapa | Tema | Seção |
-|---|---|---|
-| 1 | Identificação da empresa | [1. Contexto do negócio](#1-contexto-do-negócio) |
-| 2 | Escolha da empresa | [1. Contexto do negócio](#1-contexto-do-negócio) |
-| 3 | Processo atual | [2. Processo atual](#2-processo-atual) |
-| 4 | Problemas identificados | [3. Problemas identificados](#3-problemas-identificados) |
-| 5 | Cadastros gerais | [4. Requisitos funcionais](#4-requisitos-funcionais) |
-| 6 | Requisitos não funcionais | [5. Requisitos não funcionais](#5-requisitos-não-funcionais) |
-| 7 | Regras de negócio | [6. Regras de negócio](#6-regras-de-negócio) |
-| 8 | Aprovações e alterações | [7. Aprovações e permissões](#7-aprovações-e-permissões) |
-| 9 | Fluxograma | [2. Processo atual](#fluxograma) |
-| 10 | Entidades | [8.1 Entidades](#81-entidades) |
-| 11 | Dicionário de dados | [8.2 Diagrama ER](#82-diagrama-entidade-relacionamento) e planilha |
-| 12 | Relacionamentos | [8.3 Relacionamentos e cardinalidades](#83-relacionamentos-e-cardinalidades) |
-| 13 | Cardinalidades | [8.3 Relacionamentos e cardinalidades](#83-relacionamentos-e-cardinalidades) |
-| 14 | Relacionamentos N:N | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
-| 15 | Entidades associativas | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
-| 18 | Justificativa das decisões | [9. Decisões de modelagem](#9-decisões-de-modelagem) |
-
 
 # Modelo Lógico Relacional --- Sistema de Gestão Clínica
 
@@ -675,7 +614,7 @@ forma relacional genérica.
     data do atendimento.
 7.  A prescrição pode existir sem itens; se houver item, dosagem e
     posologia são obrigatórias.
-8.  `FOLLOW_UP` é opcional e manual, limitado a um por consulta.
+8.  `ACOMPANHAMENTO` é opcional e manual, limitado a um por consulta.
 9.  Os tipos são indicativos. A sintaxe final depende do SGBD escolhido.
 
 ## 2. Esquema relacional
@@ -761,7 +700,7 @@ mensagens/lembretes por consulta conforme regra definida, incluindo um
 lembrete para confirmação de presença. A contagem deve ser validada por
 lógica transacional.
 
-**FOLLOW_UP** - `id_follow_up` --- inteiro, PK - `id_consulta` ---
+**ACOMPANHAMENTO** - `id_acompanhamento` --- inteiro, PK - `id_consulta` ---
 inteiro, FK → `CONSULTA.id_consulta`, NN, UQ - `data_prevista` --- data,
 opcional - `data_realizacao` --- data, opcional - `canal` --- texto,
 opcional - `evolucao_sintomas` --- texto, opcional - `adesao_tratamento`
@@ -857,14 +796,4 @@ transacional) deve ser definida após escolher o SGBD.
     nulo quando a consulta for particular; confirmar essa regra
     operacional.
 5.  **Agenda:** definir se cada registro de `AGENDA` é um horário
-    reservado individual ou um intervalo de disponibilidade que pode
-    receber consultas de duração variável.
-6.  **Tipos de dados e domínios:** definir listas permitidas para
-    `status`, `tipo_consulta`, `forma_pagamento`, `canal`, `gravidade` e
-    `tarja`.
-
-## 5. Próxima etapa
-
-Depois de validar este modelo, realizar a **normalização até a 3ª Forma
-Normal (3FN)** e reconciliar as tabelas e atributos com o dicionário de
-dados. Só então gerar o SQL físico para o SGBD escolhido.
+    reservado individual ou um in... (1 KB restante(s))
