@@ -732,7 +732,7 @@ Notação: **PK** = chave primária; **FK** = chave estrangeira; **UQ** =
 ### 2.1 Pessoas e cadastro
 
 **PESSOA** - `id_pessoa` --- inteiro, PK - `cpf` --- texto(11), NN, UQ -
-`nome` --- texto, NN - `sobrenome` --- texto, NN - `sexo` --- texto,
+`nome` --- texto, NN - `sobrenome` --- texto, NN --- texto,
 opcional - `email` --- texto, opcional - `data_nascimento` --- data,
 opcional
 
