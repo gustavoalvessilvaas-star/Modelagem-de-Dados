@@ -17,6 +17,9 @@ Projeto de **modelagem de banco de dados** para uma clínica de saúde da mulher
 7. [Aprovações e permissões](#7-aprovações-e-permissões)
 8. [Modelo de dados](#8-modelo-de-dados)
 9. [Decisões de modelagem](#9-decisões-de-modelagem)
+10. [Pendências e próximos passos](#10-pendências-e-próximos-passos)
+11. [Estrutura do repositório](#11-estrutura-do-repositório)
+12. [Mapa das etapas da disciplina](#12-mapa-das-etapas-da-disciplina)
 
 ---
 
@@ -585,6 +588,110 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 
 ---
 
+## 10. Pendências e próximos passos
+
+### Pontos a validar com a clínica
+
+- [ ] Quais são os setores da clínica?
+- [ ] Um médico pode ter mais de uma especialidade? (RN04)
+- [ ] Uma paciente pode ter mais de um convênio ativo ao mesmo tempo? (RN05)
+- [ ] Toda prescrição precisa ter ao menos um medicamento? (RN19)
+- [ ] O acompanhamento pode ser disparado automaticamente pela IA, ou só o profissional confirma?
+- [ ] Qual é a política de cancelamento (prazo mínimo, reembolso e multa)?
+
+### Entregas ainda não feitas
+
+- [ ] Escolher o SGBD e registrar a escolha (pendência 1 do modelo lógico).
+- [ ] Script SQL completo: CREATE DATABASE, CREATE TABLE, constraints, INSERT, SELECT, JOIN, UPDATE, DELETE, consultas gerenciais e de auditoria.
+- [ ] Massa de dados para testar relacionamentos, restrições e integridade.
+- [ ] Alinhar o DER ao modelo lógico (ver seção 13).
+- [ ] Apresentação conforme o manual específico do professor.
+
+### Evoluções previstas no modelo
+
+- [ ] **Usuários e auditoria:** tabelas de perfil de acesso e log de alterações (requisitos de segurança).
+- [ ] **Cancelamento:** campos de prazo, reembolso e multa, após a clínica definir a política.
+
+### Histórico de revisões do modelo
+
+| Revisão | Alterações |
+|---|---|
+| Diário AL05 | Inclusão do CID como tabela de referência para os diagnósticos |
+| Diário AL06 | Auditoria do modelo lógico: PKs, FKs e entidades associativas revisadas |
+| Revisão de consistência | README, dicionário, DER e fluxograma alinhados; `MEDICO` passa a especializar `FUNCIONARIO`; novas tabelas `ACOMPANHAMENTO` e `LEMBRETE`; FK `CONSULTA.id_horario`; `LABORATORIO_EXTERNO` e `CID` incluídos no DER; cardinalidades e restrições corrigidas |
+
+---
+
+## 11. Mapa das etapas da disciplina
+
+| Etapa | Tema | Seção |
+|---|---|---|
+| 1 | Identificação da empresa | [1. Contexto do negócio](#1-contexto-do-negócio) |
+| 2 | Escolha da empresa | [1. Contexto do negócio](#1-contexto-do-negócio) |
+| 3 | Processo atual | [2. Processo atual](#2-processo-atual) |
+| 4 | Problemas identificados | [3. Problemas identificados](#3-problemas-identificados) |
+| 5 | Cadastros gerais | [4. Requisitos funcionais](#4-requisitos-funcionais) |
+| 6 | Requisitos não funcionais | [5. Requisitos não funcionais](#5-requisitos-não-funcionais) |
+| 7 | Regras de negócio | [6. Regras de negócio](#6-regras-de-negócio) |
+| 8 | Aprovações e alterações | [7. Aprovações e permissões](#7-aprovações-e-permissões) |
+| 9 | Fluxograma | [2. Processo atual](#fluxograma) |
+| 10 | Entidades | [8.1 Entidades](#81-entidades) |
+| 11 | Dicionário de dados | [8.2 Diagrama ER](#82-diagrama-entidade-relacionamento) e planilha |
+| 12 | Relacionamentos | [8.3 Relacionamentos e cardinalidades](#83-relacionamentos-e-cardinalidades) |
+| 13 | Cardinalidades | [8.3 Relacionamentos e cardinalidades](#83-relacionamentos-e-cardinalidades) |
+| 14 | Relacionamentos N:N | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
+| 15 | Entidades associativas | [8.4 N:N e associativas](#84-relacionamentos-nn-e-entidades-associativas) |
+| 18 | Justificativa das decisões | [9. Decisões de modelagem](#9-decisões-de-modelagem) |
+
+## 12. Análise de dados e possibilidades de evolução
+
+As definições abaixo são propostas e devem ser validadas pela clínica.
+
+### Indicadores de desempenho
+
+| Indicador | Cálculo proposto | Dados necessários |
+|---|---|---|
+| Taxa de comparecimento | consultas realizadas ÷ consultas agendadas | CONSULTA.status |
+| Taxa de falta | consultas com status falta ÷ consultas agendadas | CONSULTA.status |
+| Taxa de remarcação | consultas remarcadas ÷ consultas agendadas | CONSULTA.status |
+| Taxa de cancelamento | consultas canceladas ÷ consultas agendadas | CONSULTA.status |
+| Taxa de confirmação de presença | lembretes de confirmação com confirmado = verdadeiro ÷ lembretes de confirmação enviados | LEMBRETE |
+| Taxa de ocupação da agenda | horários ocupados ÷ horários cadastrados | AGENDA.status |
+| Acompanhamentos realizados no prazo | acompanhamentos realizados até a data prevista ÷ acompanhamentos previstos | ACOMPANHAMENTO |
+| Receita por convênio e particular | soma dos pagamentos pagos, agrupada por convênio ou sem convênio | PAGAMENTO, CONSULTA |
+| Pagamentos pendentes | soma dos pagamentos com status pendente | PAGAMENTO |
+| Diagnósticos mais frequentes | contagem de evoluções por CID | EVOLUCAO_CID, CID |
+| Exames pendentes | exames com status diferente de concluído | EXAME |
+
+### Informações gerenciais e decisões apoiadas
+
+- Horários ociosos e picos de demanda, para ajustar a grade dos médicos.
+- Faltas e remarcações por convênio ou por canal de lembrete, para embasar a política de cancelamento (RN16).
+- Acompanhamentos atrasados, para a equipe cobrar a realização.
+- Perfil das pacientes por diagnóstico e tratamento, para orientar a oferta de serviços.
+
+### Possibilidades de BI
+
+- Painel de agenda por médico e sala, com taxa de ocupação.
+- Painel de comparecimento, faltas e remarcações por período.
+- Painel financeiro com receita, pagamentos pendentes e estornos.
+- Painel clínico agregado por CID, sem identificar pacientes.
+
+Dados de saúde são sensíveis: os painéis devem usar dados agregados ou anonimizados, conforme a LGPD (RNF04).
+
+### Possibilidades futuras de IA
+
+- Previsão de falta a partir do histórico de comparecimento, para reforçar lembretes às pacientes de maior risco.
+- Sugestão de horários com maior chance de comparecimento.
+- Alerta ao prescrever medicamento para paciente com alergia registrada. Isso exige ligar ALERGIA ao princípio ativo do medicamento, o que o modelo ainda não tem.
+- Resumo automático do prontuário antes da consulta.
+- Análise dos textos de acompanhamento para identificar adesão ou abandono do tratamento.
+
+Essas aplicações envolvem dados sensíveis e exigem validação ética e consentimento da paciente.
+
+
+---
+
 # Modelo Lógico Relacional --- Sistema de Gestão Clínica
 
 **Centro de Ginecologia Natural e Emocional**\
@@ -761,39 +868,3 @@ inteiro, FK → `EXAME.id_exame`, NN, UQ - `id_medico` --- inteiro, FK →
 `MEDICO.id_medico`, NN - `data_resultado` --- data, NN - `laudo` ---
 texto, NN - `arquivo_anexo` --- texto, opcional - Regra: resultado é
 opcional até a realização do exame e deve ser assinado por médico.
-
-## 3. Restrições que precisam de implementação no banco ou na aplicação
-
-As chaves e os `CHECK` comuns não resolvem sozinhos todas as regras de
-negócio. A implementação final deve cobrir:
-
--   Cada pessoa precisa ter pelo menos um endereço e um telefone.
--   Médico, sala, data e intervalo da consulta devem corresponder ao
-    horário de agenda referenciado.
--   Impedir sobreposição de agenda para médico e sala.
--   Impedir sobreposição de consultas da mesma paciente.
--   No máximo um convênio ativo por paciente.
--   Confirmar consulta apenas após confirmação de pagamento ou convênio.
--   Criar dois lembretes conforme a regra de negócio.
--   Gerar evolução ao concluir consulta.
--   Garantir que o vínculo paciente-convênio usado pertence à paciente e
-    é válido na data do atendimento.
--   Não permitir alteração ou exclusão que quebre o histórico clínico.
-
-A técnica (índice parcial, restrição de exclusão, trigger ou validação
-transacional) deve ser definida após escolher o SGBD.
-
-## 4. Pontos pendentes para validar antes da normalização
-
-1.  **SGBD:** escolher PostgreSQL, MySQL ou outro; isso altera tipos,
-    índices e triggers.
-2.  **CRM:** definir se `crm` será apenas único ou se também será
-    validado por UF/formato.
-3.  **Prescrição:** confirmar se o mesmo medicamento pode aparecer mais
-    de uma vez na mesma prescrição. Se sim, usar chave própria para
-    `ITEM_PRESCRICAO`.
-4.  **Convênio em consulta particular:** `id_paciente_convenio` deve ser
-    nulo quando a consulta for particular; confirmar essa regra
-    operacional.
-5.  **Agenda:** definir se cada registro de `AGENDA` é um horário
-    reservado individual ou um in... (1 KB restante(s))
