@@ -1,0 +1,231 @@
+MODELO LÓGICO RELACIONAL — CLÍNICA CENTRO DE GINECOLOGIA NATURAL E EMOCIONAL
+
+PESSOA{
+    int id_pessoa PK NN
+    varchar(11) cpf UK NN
+    varchar nome NN
+    varchar sobrenome NN
+    varchar sexo
+    varchar email
+    date data_nascimento
+}
+
+ENDERECO_PESSOA{
+    int id_endereco PK NN
+    int id_pessoa FK NN
+    varchar logradouro NN
+    varchar numero NN
+    varchar bairro NN
+    varchar cidade NN
+    varchar estado NN
+    varchar(8) cep NN
+    varchar complemento
+}
+
+TELEFONE_PESSOA{
+    int id_telefone PK NN
+    int id_pessoa FK NN
+    varchar numero NN
+}
+
+PACIENTE{
+    int id_paciente PK NN
+    int id_pessoa FK UK NN
+    varchar tipo_sanguineo
+}
+
+FUNCIONARIO{
+    int id_funcionario PK NN
+    int id_pessoa FK UK NN
+    varchar cargo NN
+    date data_contratacao NN
+}
+
+MEDICO{
+    int id_medico PK NN
+    int id_funcionario FK UK NN
+    varchar crm UK NN
+}
+
+ESPECIALIDADE{
+    int id_especialidade PK NN
+    varchar nome UK NN
+}
+
+MEDICO_ESPECIALIDADE{
+    int id_medico PK FK NN
+    int id_especialidade PK FK NN
+    varchar rqe
+}
+
+ALERGIA{
+    int id_alergia PK NN
+    varchar descricao UK NN
+}
+
+PACIENTE_ALERGIA{
+    int id_paciente PK FK NN
+    int id_alergia PK FK NN
+    varchar gravidade NN
+    date data_identificacao
+}
+
+CONVENIO{
+    int id_convenio PK NN
+    varchar nome UK NN
+    varchar registro_ans
+    varchar telefone_contato
+}
+
+PACIENTE_CONVENIO{
+    int id_paciente_convenio PK NN
+    int id_paciente FK NN
+    int id_convenio FK NN
+    varchar numero_carteirinha NN
+    date data_inicio NN
+    date data_validade NN
+    boolean ativo NN
+}
+
+SALA{
+    int id_sala PK NN
+    varchar numero UK NN
+    varchar andar
+}
+
+AGENDA{
+    int id_horario PK NN
+    int id_medico FK NN
+    int id_sala FK NN
+    date data NN
+    time hora_inicio NN
+    time hora_fim NN
+    varchar status NN
+}
+
+CONSULTA{
+    int id_consulta PK NN
+    int id_paciente FK NN
+    int id_horario FK NN
+    int id_paciente_convenio FK
+    varchar tipo_consulta NN
+    varchar status NN
+    decimal(10,2) valor NN
+    text observacoes
+}
+
+PAGAMENTO{
+    int id_pagamento PK NN
+    int id_consulta FK NN
+    decimal(10,2) valor NN
+    varchar forma_pagamento NN
+    datetime data_pagamento
+    varchar status NN
+}
+
+LEMBRETE{
+    int id_lembrete PK NN
+    int id_consulta FK NN
+    varchar tipo NN
+    datetime data_envio NN
+    varchar canal NN
+    boolean confirmado NN
+    smallint numero_lembrete NN
+}
+
+ACOMPANHAMENTO{
+    int id_follow_up PK NN
+    int id_consulta FK UK NN
+    date data_prevista NN
+    date data_realizacao
+    varchar canal
+    text evolucao_sintomas
+    text adesao_tratamento
+    text duvidas
+    varchar status NN
+}
+
+PRONTUARIO{
+    int id_prontuario PK NN
+    int id_paciente FK UK NN
+    date data_abertura NN
+    text observacoes_gerais
+}
+
+EVOLUCAO_PRONTUARIO{
+    int id_evolucao PK NN
+    int id_consulta FK UK NN
+    date data NN
+    varchar queixa_principal
+    text diagnostico
+    text conduta
+}
+
+CID{
+    varchar cod_cid PK NN
+    varchar descricao NN
+    varchar categoria
+}
+
+EVOLUCAO_CID{
+    int id_evolucao PK FK NN
+    varchar cod_cid PK FK NN
+    text observacoes
+}
+
+MEDICAMENTO{
+    int id_medicamento PK NN
+    varchar nome NN
+    varchar principio_ativo
+    varchar fabricante
+    varchar tarja
+}
+
+PRESCRICAO{
+    int id_prescricao PK NN
+    int id_consulta FK NN
+    date data_emissao NN
+    date validade
+}
+
+ITEM_PRESCRICAO{
+    int id_prescricao PK FK NN
+    int id_medicamento PK FK NN
+    varchar posologia NN
+    varchar dosagem NN
+    varchar duracao_tratamento
+}
+
+TIPO_EXAME{
+    int id_tipo_exame PK NN
+    varchar nome UK NN
+    decimal(10,2) preco_padrao
+    text preparo_necessario
+}
+
+LABORATORIO_EXTERNO{
+    int id_laboratorio PK NN
+    varchar nome NN
+    varchar(14) cnpj UK
+    varchar telefone
+}
+
+EXAME{
+    int id_exame PK NN
+    int id_consulta FK NN
+    int id_tipo_exame FK NN
+    int id_funcionario_responsavel FK
+    int id_laboratorio_externo FK
+    date data_solicitacao NN
+    date data_realizacao
+    varchar status NN
+}
+
+RESULTADO_EXAME{
+    int id_resultado PK NN
+    int id_exame FK UK NN
+    int id_medico FK NN
+    date data_resultado NN
+    text laudo NN
+    text arquivo_anexo
+}
