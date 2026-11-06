@@ -1,0 +1,535 @@
+-- Compatibilidade: MySQL 8.0.16 ou superior.
+-- As tabelas usam InnoDB para suportar chaves estrangeiras e transacoes.
+CREATE DATABASE IF NOT EXISTS clinica_ginecologia CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE clinica_ginecologia;
+
+CREATE TABLE pessoa (
+    id_pessoa        INT AUTO_INCREMENT PRIMARY KEY,
+    cpf              CHAR(11)     NOT NULL UNIQUE,
+    nome             VARCHAR(60)  NOT NULL,
+    sobrenome        VARCHAR(100) NOT NULL,
+    email            VARCHAR(120),
+    data_nascimento  DATE,
+    CONSTRAINT ck_pessoa_cpf CHECK (cpf REGEXP '^[0-9]{11}$'),
+    CONSTRAINT ck_pessoa_email CHECK (email IS NULL OR email LIKE '%@%.%')
+) ENGINE=InnoDB;
+
+CREATE TABLE endereco_pessoa (
+    id_endereco  INT AUTO_INCREMENT PRIMARY KEY,
+    id_pessoa    INT          NOT NULL,
+    logradouro   VARCHAR(150) NOT NULL,
+    numero       VARCHAR(10)  NOT NULL,
+    bairro       VARCHAR(80)  NOT NULL,
+    cidade       VARCHAR(80)  NOT NULL,
+    estado       CHAR(2)      NOT NULL,
+    cep          CHAR(8)      NOT NULL,
+    complemento  VARCHAR(60),
+    CONSTRAINT fk_endereco_pessoa FOREIGN KEY (id_pessoa) REFERENCES pessoa (id_pessoa),
+    CONSTRAINT ck_endereco_uf CHECK (estado REGEXP '^[A-Z]{2}$'),
+    CONSTRAINT ck_endereco_cep CHECK (cep REGEXP '^[0-9]{8}$')
+) ENGINE=InnoDB;
+
+CREATE TABLE telefone_pessoa (
+    id_telefone  INT AUTO_INCREMENT PRIMARY KEY,
+    id_pessoa    INT         NOT NULL,
+    numero       VARCHAR(20) NOT NULL,
+    CONSTRAINT fk_telefone_pessoa FOREIGN KEY (id_pessoa) REFERENCES pessoa (id_pessoa),
+    CONSTRAINT ck_telefone_numero CHECK (numero REGEXP '^[0-9]{10,11}$')
+) ENGINE=InnoDB;
+
+CREATE TABLE paciente (
+    id_paciente    INT AUTO_INCREMENT PRIMARY KEY,
+    id_pessoa      INT         NOT NULL UNIQUE,
+    tipo_sanguineo VARCHAR(3),
+    CONSTRAINT fk_paciente_pessoa FOREIGN KEY (id_pessoa) REFERENCES pessoa (id_pessoa),
+    CONSTRAINT ck_paciente_tipo_sanguineo CHECK (
+        tipo_sanguineo IS NULL OR tipo_sanguineo IN ('A+','A-','B+','B-','AB+','AB-','O+','O-'))
+) ENGINE=InnoDB;
+
+CREATE TABLE funcionario (
+    id_funcionario     INT AUTO_INCREMENT PRIMARY KEY,
+    id_pessoa          INT         NOT NULL UNIQUE,
+    cargo              VARCHAR(60) NOT NULL,
+    data_contratacao   DATE        NOT NULL DEFAULT (CURRENT_DATE),
+    CONSTRAINT fk_funcionario_pessoa FOREIGN KEY (id_pessoa) REFERENCES pessoa (id_pessoa)
+) ENGINE=InnoDB;
+
+CREATE TABLE medico (
+    id_medico       INT AUTO_INCREMENT PRIMARY KEY,
+    id_funcionario  INT         NOT NULL UNIQUE,
+    crm             VARCHAR(20) NOT NULL UNIQUE,
+    CONSTRAINT fk_medico_funcionario FOREIGN KEY (id_funcionario) REFERENCES funcionario (id_funcionario),
+    CONSTRAINT ck_medico_crm CHECK (crm REGEXP '^[0-9]+(/[A-Z]{2})?$')
+) ENGINE=InnoDB;
+
+CREATE TABLE especialidade (
+    id_especialidade INT AUTO_INCREMENT PRIMARY KEY,
+    nome             VARCHAR(80) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE medico_especialidade (
+    id_medico        INT         NOT NULL,
+    id_especialidade INT         NOT NULL,
+    rqe              VARCHAR(20),
+    PRIMARY KEY (id_medico, id_especialidade),
+    CONSTRAINT fk_me_medico FOREIGN KEY (id_medico) REFERENCES medico (id_medico),
+    CONSTRAINT fk_me_especialidade FOREIGN KEY (id_especialidade) REFERENCES especialidade (id_especialidade)
+) ENGINE=InnoDB;
+
+CREATE TABLE alergia (
+    id_alergia  INT AUTO_INCREMENT PRIMARY KEY,
+    descricao   VARCHAR(80) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
+CREATE TABLE paciente_alergia (
+    id_paciente          INT         NOT NULL,
+    id_alergia           INT         NOT NULL,
+    gravidade            VARCHAR(10) NOT NULL,
+    data_identificacao   DATE,
+    PRIMARY KEY (id_paciente, id_alergia),
+    CONSTRAINT fk_pa_paciente FOREIGN KEY (id_paciente) REFERENCES paciente (id_paciente),
+    CONSTRAINT fk_pa_alergia FOREIGN KEY (id_alergia) REFERENCES alergia (id_alergia),
+    CONSTRAINT ck_paciente_alergia_gravidade CHECK (gravidade IN ('leve','moderada','grave'))
+) ENGINE=InnoDB;
+
+CREATE TABLE convenio (
+    id_convenio      INT AUTO_INCREMENT PRIMARY KEY,
+    nome             VARCHAR(100) NOT NULL UNIQUE,
+    registro_ans     VARCHAR(20),
+    telefone_contato VARCHAR(20)
+) ENGINE=InnoDB;
+
+CREATE TABLE paciente_convenio (
+    id_paciente_convenio INT AUTO_INCREMENT PRIMARY KEY,
+    id_paciente          INT         NOT NULL,
+    id_convenio          INT         NOT NULL,
+    numero_carteirinha   VARCHAR(30) NOT NULL,
+    data_inicio          DATE        NOT NULL,
+    data_validade        DATE        NOT NULL,
+    ativo                BOOLEAN     NOT NULL DEFAULT TRUE,
+    ativo_unico          TINYINT GENERATED ALWAYS AS (IF(ativo, 1, NULL)) STORED,
+    CONSTRAINT uq_paciente_convenio_par UNIQUE (id_paciente_convenio, id_paciente),
+    CONSTRAINT uq_carteirinha_convenio UNIQUE (id_convenio, numero_carteirinha),
+    CONSTRAINT uq_paciente_convenio_ativo UNIQUE (id_paciente, ativo_unico),
+    CONSTRAINT fk_pc_paciente FOREIGN KEY (id_paciente) REFERENCES paciente (id_paciente),
+    CONSTRAINT fk_pc_convenio FOREIGN KEY (id_convenio) REFERENCES convenio (id_convenio),
+    CONSTRAINT ck_paciente_convenio_datas CHECK (data_validade > data_inicio)
+) ENGINE=InnoDB;
+
+CREATE TABLE sala (
+    id_sala  INT AUTO_INCREMENT PRIMARY KEY,
+    numero   VARCHAR(10) NOT NULL UNIQUE,
+    andar    VARCHAR(10)
+) ENGINE=InnoDB;
+
+CREATE TABLE agenda (
+    id_horario  INT AUTO_INCREMENT PRIMARY KEY,
+    id_medico   INT         NOT NULL,
+    id_sala     INT         NOT NULL,
+    data        DATE        NOT NULL,
+    hora_inicio TIME        NOT NULL,
+    hora_fim    TIME        NOT NULL,
+    status      VARCHAR(12) NOT NULL DEFAULT 'disponivel',
+    CONSTRAINT uq_agenda_medico_horario UNIQUE (id_medico, data, hora_inicio),
+    CONSTRAINT fk_agenda_medico FOREIGN KEY (id_medico) REFERENCES medico (id_medico),
+    CONSTRAINT fk_agenda_sala FOREIGN KEY (id_sala) REFERENCES sala (id_sala),
+    CONSTRAINT ck_agenda_hora CHECK (hora_fim > hora_inicio),
+    CONSTRAINT ck_agenda_status CHECK (status IN ('disponivel','reservado','ocupado','bloqueado'))
+) ENGINE=InnoDB;
+
+CREATE TABLE consulta (
+    id_consulta           INT AUTO_INCREMENT PRIMARY KEY,
+    id_paciente           INT           NOT NULL,
+    id_horario            INT           NOT NULL UNIQUE,
+    id_paciente_convenio  INT,
+    tipo_consulta         VARCHAR(30)   NOT NULL,
+    status                VARCHAR(12)   NOT NULL DEFAULT 'agendada',
+    valor                 DECIMAL(10,2) NOT NULL,
+    observacoes           TEXT,
+    CONSTRAINT fk_consulta_paciente FOREIGN KEY (id_paciente) REFERENCES paciente (id_paciente),
+    CONSTRAINT fk_consulta_horario FOREIGN KEY (id_horario) REFERENCES agenda (id_horario),
+    CONSTRAINT fk_consulta_paciente_convenio FOREIGN KEY (id_paciente_convenio, id_paciente)
+        REFERENCES paciente_convenio (id_paciente_convenio, id_paciente),
+    CONSTRAINT ck_consulta_status CHECK (status IN ('agendada','confirmada','realizada','cancelada','remarcada','falta')),
+    CONSTRAINT ck_consulta_valor CHECK (valor >= 0)
+) ENGINE=InnoDB;
+
+CREATE TABLE pagamento (
+    id_pagamento     INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta      INT           NOT NULL,
+    valor            DECIMAL(10,2) NOT NULL,
+    forma_pagamento  VARCHAR(20)   NOT NULL,
+    data_pagamento   DATETIME,
+    status           VARCHAR(12)   NOT NULL DEFAULT 'pendente',
+    CONSTRAINT fk_pagamento_consulta FOREIGN KEY (id_consulta) REFERENCES consulta (id_consulta),
+    CONSTRAINT ck_pagamento_valor CHECK (valor > 0),
+    CONSTRAINT ck_pagamento_status CHECK (status IN ('pendente','pago','estornado')),
+    CONSTRAINT ck_pagamento_pendente_sem_data CHECK (status <> 'pendente' OR data_pagamento IS NULL),
+    CONSTRAINT ck_pagamento_pago_com_data CHECK (status <> 'pago' OR data_pagamento IS NOT NULL)
+) ENGINE=InnoDB;
+
+CREATE TABLE lembrete (
+    id_lembrete       INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta       INT         NOT NULL,
+    numero_lembrete   SMALLINT    NOT NULL,
+    tipo              VARCHAR(20) NOT NULL,
+    data_envio        DATETIME,
+    canal             VARCHAR(20) NOT NULL,
+    confirmado        BOOLEAN     NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_lembrete_consulta FOREIGN KEY (id_consulta) REFERENCES consulta (id_consulta),
+    CONSTRAINT uq_lembrete_numero UNIQUE (id_consulta, numero_lembrete),
+    CONSTRAINT ck_lembrete_numero CHECK (numero_lembrete BETWEEN 1 AND 3),
+    CONSTRAINT ck_lembrete_tipo CHECK (tipo IN ('aviso','confirmacao_presenca'))
+) ENGINE=InnoDB;
+
+CREATE TABLE acompanhamento (
+    id_acompanhamento INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta       INT         NOT NULL UNIQUE,
+    data_prevista     DATE        NOT NULL,
+    data_realizacao   DATE,
+    canal             VARCHAR(20),
+    evolucao_sintomas TEXT,
+    adesao_tratamento TEXT,
+    duvidas           TEXT,
+    status            VARCHAR(12) NOT NULL DEFAULT 'pendente',
+    CONSTRAINT fk_acompanhamento_consulta FOREIGN KEY (id_consulta) REFERENCES consulta (id_consulta),
+    CONSTRAINT ck_acompanhamento_status CHECK (status IN ('pendente','realizado','sem retorno')),
+    CONSTRAINT ck_acompanhamento_realizado_com_data CHECK (status <> 'realizado' OR data_realizacao IS NOT NULL)
+) ENGINE=InnoDB;
+
+CREATE TABLE prontuario (
+    id_prontuario       INT AUTO_INCREMENT PRIMARY KEY,
+    id_paciente         INT  NOT NULL UNIQUE,
+    data_abertura       DATE NOT NULL DEFAULT (CURRENT_DATE),
+    observacoes_gerais  TEXT,
+    CONSTRAINT fk_prontuario_paciente FOREIGN KEY (id_paciente) REFERENCES paciente (id_paciente)
+) ENGINE=InnoDB;
+
+CREATE TABLE evolucao_prontuario (
+    id_evolucao       INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta       INT          NOT NULL UNIQUE,
+    data              DATE         NOT NULL,
+    queixa_principal  VARCHAR(200),
+    diagnostico       TEXT,
+    conduta           TEXT,
+    CONSTRAINT fk_evolucao_consulta FOREIGN KEY (id_consulta) REFERENCES consulta (id_consulta)
+) ENGINE=InnoDB;
+
+CREATE TABLE cid (
+    cod_cid    VARCHAR(10)  PRIMARY KEY,
+    descricao  VARCHAR(200) NOT NULL,
+    categoria  VARCHAR(80),
+    CONSTRAINT ck_cid_formato CHECK (cod_cid REGEXP '^[A-Z][0-9]{2}(\\.[0-9]{1,2})?$')
+) ENGINE=InnoDB;
+
+CREATE TABLE evolucao_cid (
+    id_evolucao  INT         NOT NULL,
+    cod_cid      VARCHAR(10) NOT NULL,
+    observacoes  TEXT,
+    PRIMARY KEY (id_evolucao, cod_cid),
+    CONSTRAINT fk_ec_evolucao FOREIGN KEY (id_evolucao) REFERENCES evolucao_prontuario (id_evolucao),
+    CONSTRAINT fk_ec_cid FOREIGN KEY (cod_cid) REFERENCES cid (cod_cid)
+) ENGINE=InnoDB;
+
+CREATE TABLE medicamento (
+    id_medicamento   INT AUTO_INCREMENT PRIMARY KEY,
+    nome             VARCHAR(100) NOT NULL,
+    principio_ativo  VARCHAR(100),
+    fabricante       VARCHAR(100),
+    tarja            VARCHAR(10),
+    CONSTRAINT ck_medicamento_tarja CHECK (tarja IS NULL OR tarja IN ('livre','amarela','vermelha','preta'))
+) ENGINE=InnoDB;
+
+CREATE TABLE prescricao (
+    id_prescricao  INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta    INT  NOT NULL,
+    data_emissao   DATE NOT NULL DEFAULT (CURRENT_DATE),
+    validade       DATE,
+    CONSTRAINT fk_prescricao_consulta FOREIGN KEY (id_consulta) REFERENCES consulta (id_consulta),
+    CONSTRAINT ck_prescricao_validade CHECK (validade IS NULL OR validade >= data_emissao)
+) ENGINE=InnoDB;
+
+CREATE TABLE item_prescricao (
+    id_prescricao      INT          NOT NULL,
+    id_medicamento     INT          NOT NULL,
+    posologia          VARCHAR(200) NOT NULL,
+    dosagem            VARCHAR(60)  NOT NULL,
+    duracao_tratamento VARCHAR(60),
+    PRIMARY KEY (id_prescricao, id_medicamento),
+    CONSTRAINT fk_item_prescricao FOREIGN KEY (id_prescricao) REFERENCES prescricao (id_prescricao),
+    CONSTRAINT fk_item_medicamento FOREIGN KEY (id_medicamento) REFERENCES medicamento (id_medicamento)
+) ENGINE=InnoDB;
+
+CREATE TABLE tipo_exame (
+    id_tipo_exame      INT AUTO_INCREMENT PRIMARY KEY,
+    nome               VARCHAR(100) NOT NULL UNIQUE,
+    preco_padrao       DECIMAL(10,2),
+    preparo_necessario TEXT,
+    CONSTRAINT ck_tipo_exame_preco CHECK (preco_padrao IS NULL OR preco_padrao >= 0)
+) ENGINE=InnoDB;
+
+CREATE TABLE laboratorio_externo (
+    id_laboratorio  INT AUTO_INCREMENT PRIMARY KEY,
+    nome            VARCHAR(100) NOT NULL,
+    cnpj            CHAR(14) UNIQUE,
+    telefone        VARCHAR(20),
+    CONSTRAINT ck_laboratorio_cnpj CHECK (cnpj IS NULL OR cnpj REGEXP '^[0-9]{14}$')
+) ENGINE=InnoDB;
+
+CREATE TABLE exame (
+    id_exame                    INT AUTO_INCREMENT PRIMARY KEY,
+    id_consulta                 INT         NOT NULL,
+    id_tipo_exame               INT         NOT NULL,
+    id_funcionario_responsavel  INT,
+    id_laboratorio_externo      INT,
+    data_solicitacao            DATE        NOT NULL DEFAULT (CURRENT_DATE),
+    data_realizacao             DATE,
+    status                      VARCHAR(12) NOT NULL DEFAULT 'solicitado',
+    CONSTRAINT fk_exame_consulta FOREIGN KEY (id_consulta) REFERENCES consulta (id_consulta),
+    CONSTRAINT fk_exame_tipo FOREIGN KEY (id_tipo_exame) REFERENCES tipo_exame (id_tipo_exame),
+    CONSTRAINT fk_exame_funcionario FOREIGN KEY (id_funcionario_responsavel) REFERENCES funcionario (id_funcionario),
+    CONSTRAINT fk_exame_laboratorio FOREIGN KEY (id_laboratorio_externo) REFERENCES laboratorio_externo (id_laboratorio),
+    CONSTRAINT ck_exame_status CHECK (status IN ('solicitado','coletado','concluido')),
+    CONSTRAINT ck_exame_datas CHECK (data_realizacao IS NULL OR data_realizacao >= data_solicitacao),
+    CONSTRAINT ck_exame_concluido_com_data CHECK (status <> 'concluido' OR data_realizacao IS NOT NULL)
+) ENGINE=InnoDB;
+
+CREATE TABLE resultado_exame (
+    id_resultado    INT AUTO_INCREMENT PRIMARY KEY,
+    id_exame        INT  NOT NULL UNIQUE,
+    id_medico       INT  NOT NULL,
+    data_resultado  DATE NOT NULL,
+    laudo           TEXT NOT NULL,
+    arquivo_anexo   TEXT,
+    CONSTRAINT fk_resultado_exame FOREIGN KEY (id_exame) REFERENCES exame (id_exame),
+    CONSTRAINT fk_resultado_medico FOREIGN KEY (id_medico) REFERENCES medico (id_medico)
+) ENGINE=InnoDB;
+
+DELIMITER $$
+
+/*
+  AGENDA:
+  Os SELECT ... FOR UPDATE bloqueiam as linhas do médico e da sala
+  durante a verificação. Execute operações de agenda em transações InnoDB.
+*/
+CREATE TRIGGER trg_agenda_sem_sobreposicao_insert
+BEFORE INSERT ON agenda FOR EACH ROW
+BEGIN
+    DECLARE v_medico INT;
+    DECLARE v_sala INT;
+
+    SELECT id_medico INTO v_medico
+      FROM medico
+     WHERE id_medico = NEW.id_medico
+     FOR UPDATE;
+
+    SELECT id_sala INTO v_sala
+      FROM sala
+     WHERE id_sala = NEW.id_sala
+     FOR UPDATE;
+
+    IF EXISTS (
+        SELECT 1 FROM agenda a
+         WHERE a.data = NEW.data
+           AND a.hora_inicio < NEW.hora_fim
+           AND a.hora_fim > NEW.hora_inicio
+           AND (a.id_medico = NEW.id_medico OR a.id_sala = NEW.id_sala)
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Horario sobreposto para o medico ou para a sala';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_agenda_sem_sobreposicao_update
+BEFORE UPDATE ON agenda FOR EACH ROW
+BEGIN
+    DECLARE v_medico INT;
+    DECLARE v_sala INT;
+
+    SELECT id_medico INTO v_medico
+      FROM medico
+     WHERE id_medico = NEW.id_medico
+     FOR UPDATE;
+
+    SELECT id_sala INTO v_sala
+      FROM sala
+     WHERE id_sala = NEW.id_sala
+     FOR UPDATE;
+
+    IF EXISTS (
+        SELECT 1 FROM agenda a
+         WHERE a.id_horario <> NEW.id_horario
+           AND a.data = NEW.data
+           AND a.hora_inicio < NEW.hora_fim
+           AND a.hora_fim > NEW.hora_inicio
+           AND (a.id_medico = NEW.id_medico OR a.id_sala = NEW.id_sala)
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Horario sobreposto para o medico ou para a sala';
+    END IF;
+END$$
+
+/* Valida convênio ativo e vigente na data do horário da consulta. */
+CREATE TRIGGER trg_consulta_convenio_insert
+BEFORE INSERT ON consulta FOR EACH ROW
+BEGIN
+    DECLARE v_data_agenda DATE;
+    DECLARE v_ativo BOOLEAN;
+    DECLARE v_inicio DATE;
+    DECLARE v_validade DATE;
+
+    IF NEW.id_paciente_convenio IS NOT NULL THEN
+        SELECT a.data, pc.ativo, pc.data_inicio, pc.data_validade
+          INTO v_data_agenda, v_ativo, v_inicio, v_validade
+          FROM agenda a
+          JOIN paciente_convenio pc
+            ON pc.id_paciente_convenio = NEW.id_paciente_convenio
+           AND pc.id_paciente = NEW.id_paciente
+         WHERE a.id_horario = NEW.id_horario;
+
+        IF v_ativo <> TRUE
+           OR v_data_agenda < v_inicio
+           OR v_data_agenda > v_validade THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Convenio inativo ou fora da vigencia na data da consulta';
+        END IF;
+    END IF;
+END$$
+
+CREATE TRIGGER trg_consulta_convenio_update
+BEFORE UPDATE ON consulta FOR EACH ROW
+BEGIN
+    DECLARE v_data_agenda DATE;
+    DECLARE v_ativo BOOLEAN;
+    DECLARE v_inicio DATE;
+    DECLARE v_validade DATE;
+
+    IF NEW.id_paciente_convenio IS NOT NULL THEN
+        SELECT a.data, pc.ativo, pc.data_inicio, pc.data_validade
+          INTO v_data_agenda, v_ativo, v_inicio, v_validade
+          FROM agenda a
+          JOIN paciente_convenio pc
+            ON pc.id_paciente_convenio = NEW.id_paciente_convenio
+           AND pc.id_paciente = NEW.id_paciente
+         WHERE a.id_horario = NEW.id_horario;
+
+        IF v_ativo <> TRUE
+           OR v_data_agenda < v_inicio
+           OR v_data_agenda > v_validade THEN
+            SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Convenio inativo ou fora da vigencia na data da consulta';
+        END IF;
+    END IF;
+END$$
+
+/* Evolução só pode ser vinculada a consulta realizada. */
+CREATE TRIGGER trg_evolucao_consulta_realizada_insert
+BEFORE INSERT ON evolucao_prontuario FOR EACH ROW
+BEGIN
+    DECLARE v_status VARCHAR(12);
+
+    SELECT status INTO v_status
+      FROM consulta
+     WHERE id_consulta = NEW.id_consulta
+     FOR UPDATE;
+
+    IF v_status <> 'realizada' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'A evolucao exige uma consulta com status realizada';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_evolucao_consulta_realizada_update
+BEFORE UPDATE ON evolucao_prontuario FOR EACH ROW
+BEGIN
+    DECLARE v_status VARCHAR(12);
+
+    SELECT status INTO v_status
+      FROM consulta
+     WHERE id_consulta = NEW.id_consulta
+     FOR UPDATE;
+
+    IF v_status <> 'realizada' THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'A evolucao exige uma consulta com status realizada';
+    END IF;
+END$$
+
+/* Laudo exige exame realizado e data de resultado coerente. */
+CREATE TRIGGER trg_resultado_exame_validar_insert
+BEFORE INSERT ON resultado_exame FOR EACH ROW
+BEGIN
+    DECLARE v_data_realizacao DATE;
+    DECLARE v_data_solicitacao DATE;
+
+    SELECT data_realizacao, data_solicitacao
+      INTO v_data_realizacao, v_data_solicitacao
+      FROM exame
+     WHERE id_exame = NEW.id_exame
+     FOR UPDATE;
+
+    IF v_data_realizacao IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'O exame precisa ter data de realizacao antes do laudo';
+    END IF;
+
+    IF NEW.data_resultado < v_data_realizacao
+       OR NEW.data_resultado < v_data_solicitacao THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'A data do resultado nao pode anteceder a realizacao do exame';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_resultado_exame_validar_update
+BEFORE UPDATE ON resultado_exame FOR EACH ROW
+BEGIN
+    DECLARE v_data_realizacao DATE;
+    DECLARE v_data_solicitacao DATE;
+
+    SELECT data_realizacao, data_solicitacao
+      INTO v_data_realizacao, v_data_solicitacao
+      FROM exame
+     WHERE id_exame = NEW.id_exame
+     FOR UPDATE;
+
+    IF v_data_realizacao IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'O exame precisa ter data de realizacao antes do laudo';
+    END IF;
+
+    IF NEW.data_resultado < v_data_realizacao
+       OR NEW.data_resultado < v_data_solicitacao THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'A data do resultado nao pode anteceder a realizacao do exame';
+    END IF;
+END$$
+
+/* Exame só pode ser concluído se já houver resultado cadastrado. */
+CREATE TRIGGER trg_exame_concluido_com_resultado_update
+BEFORE UPDATE ON exame FOR EACH ROW
+BEGIN
+    IF NEW.status = 'concluido'
+       AND OLD.status <> 'concluido'
+       AND NOT EXISTS (
+           SELECT 1
+             FROM resultado_exame r
+            WHERE r.id_exame = NEW.id_exame
+       ) THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Exame concluido exige resultado cadastrado';
+    END IF;
+END$$
+
+DELIMITER ;
+
+/*
+  REGRAS QUE DEVEM SER GARANTIDAS PELA APLICACAO/TRANSACAO:
+  - Validar dígitos verificadores do CPF; o CHECK verifica apenas 11 números.
+  - Validar formato de e-mail com biblioteca apropriada.
+  - Inserir prescrição e ao menos um item_prescricao na mesma transação.
+  - Criar os três lembretes (1, 2 e 3) e pelo menos um de confirmação.
+  - Ao marcar consulta como realizada, inserir sua evolução na mesma transação.
+  - Para concluir exame: informar data_realizacao, inserir resultado e então
+    atualizar exame.status para concluido, tudo na mesma transação.
+  - Garantir que todo médico tenha ao menos uma especialidade no fluxo de cadastro.
+*/
