@@ -18,8 +18,8 @@ Projeto de **modelagem de banco de dados** para uma clínica de saúde da mulher
 8. [Modelo de dados](#8-modelo-de-dados)
 9. [Decisões de modelagem](#9-decisões-de-modelagem)
 10. [Pendências e próximos passos](#10-pendências-e-próximos-passos)
-11. [Estrutura do repositório](#11-estrutura-do-repositório)
-12. [Mapa das etapas da disciplina](#12-mapa-das-etapas-da-disciplina)
+11. [Mapa das etapas da disciplina](#11-mapa-das-etapas-da-disciplina)
+12. [Análise de dados e possibilidades de evolução](#12-análise-de-dados-e-possibilidades-de-evolução)
 
 ---
 
@@ -145,7 +145,7 @@ Cada requisito recebe um código (RF) para rastreabilidade, no mesmo formato das
 | RF18 | Pagamentos | Registrar valor, forma, data e status do pagamento de cada consulta. |
 | RF19 | Prontuário | Abrir um prontuário por paciente e registrar uma evolução a cada consulta (queixa principal, diagnóstico, CID e conduta). |
 | RF20 | Prescrições | Emitir prescrições vinculadas à consulta, com medicamento, posologia, dosagem e duração de cada item. |
-| RF21 | Exames | Solicitar exames vinculados à consulta e à paciente, acompanhar datas e status, indicar o laboratório externo e registrar o resultado (laudo, anexo e médico responsável). |
+| RF21 | Exames | Solicitar exames vinculados à consulta (a paciente é obtida pela consulta), acompanhar datas e status, indicar o laboratório externo e registrar o resultado (laudo, anexo e médico responsável). |
 
 ---
 
@@ -180,7 +180,7 @@ Cada requisito recebe um código (RF) para rastreabilidade, no mesmo formato das
 | RN02 | Pessoas | Cada paciente e cada funcionário correspondem a exatamente uma pessoa. |
 | RN03 | Pessoas | Todo médico é um funcionário e deve possuir CRM válido e único. |
 | RN04 | Pessoas | Um médico possui uma ou mais especialidades. |
-| RN05 | Convênios | Uma paciente pode possuir vários convênios, cada um com data de validade. |
+| RN05 | Convênios | Uma paciente pode possuir vários convênios, cada um com data de validade. *Pendente de validação (seção 10); o modelo permite no máximo um vínculo ativo por paciente.* |
 | RN06 | Convênios | A clínica só aceita convênios cadastrados, e o uso depende da validade da carteirinha. |
 | RN07 | Convênios | Uma consulta pode ou não estar vinculada a um convênio (atendimento particular). |
 | RN08 | Alergias | Uma paciente pode possuir várias alergias, cada uma com grau de gravidade. |
@@ -194,9 +194,9 @@ Cada requisito recebe um código (RF) para rastreabilidade, no mesmo formato das
 | RN16 | Cancelamento | O cancelamento segue a política da clínica (prazo mínimo e reembolso); fora do prazo pode gerar cobrança. |
 | RN17 | Prontuário | Toda paciente possui exatamente um prontuário. |
 | RN18 | Prontuário | Toda consulta realizada gera uma evolução no prontuário. |
-| RN19 | Prescrição | Toda prescrição está vinculada a uma consulta e contém pelo menos um item. |
+| RN19 | Prescrição | Toda prescrição está vinculada a uma consulta e contém pelo menos um item. *Pendente de validação (seção 10); o modelo aceita prescrição sem itens.* |
 | RN20 | Prescrição | Todo item de prescrição possui posologia e dosagem definidas. |
-| RN21 | Exames | Todo exame está vinculado a uma consulta e a uma paciente, e pode ser processado por um laboratório externo. |
+| RN21 | Exames | Todo exame está vinculado a uma consulta, da qual se obtém a paciente, e pode ser processado por um laboratório externo. |
 | RN22 | Exames | Todo exame realizado gera um resultado assinado por um médico. |
 | RN23 | Acompanhamento | Toda consulta gera um acompanhamento 1 semana depois, para verificar sintomas e adesão ao tratamento. |
 
@@ -216,7 +216,7 @@ Cada requisito recebe um código (RF) para rastreabilidade, no mesmo formato das
 
 ## 8. Modelo de dados
 
-O modelo possui **28 entidades**. O dicionário completo (tipos, tamanhos, nulidade e descrições) está em [`Dicionario_de_Dados_Clinica.xlsx`](Dicionario_de_Dados_Clinica.xlsx).
+O modelo possui **29 entidades**. O dicionário completo (tipos, tamanhos, nulidade e descrições) está em [`Dicionario_de_Dados_Clinica.xlsx`](Dicionario_de_Dados_Clinica.xlsx).
 
 ### 8.1 Entidades
 
@@ -228,7 +228,7 @@ O modelo possui **28 entidades**. O dicionário completo (tipos, tamanhos, nulid
 | **Convênios** | `CONVENIO`, `PACIENTE_CONVENIO` |
 | **Agenda e atendimento** | `SALA`, `AGENDA`, `CONSULTA`, `PAGAMENTO` |
 | **Acompanhamento** | `LEMBRETE`, `ACOMPANHAMENTO` |
-| **Prontuário** | `PRONTUARIO`, `EVOLUCAO_PRONTUARIO`, `CID` |
+| **Prontuário** | `PRONTUARIO`, `EVOLUCAO_PRONTUARIO`, `EVOLUCAO_CID`, `CID` |
 | **Prescrição** | `MEDICAMENTO`, `PRESCRICAO`, `ITEM_PRESCRICAO` |
 | **Exames** | `TIPO_EXAME`, `LABORATORIO_EXTERNO`, `EXAME`, `RESULTADO_EXAME` |
 
@@ -252,26 +252,23 @@ erDiagram
 
     MEDICO ||--o{ AGENDA : disponibiliza
     SALA ||--o{ AGENDA : reserva
+    AGENDA |o--o| CONSULTA : ocupa
     PACIENTE ||--o{ CONSULTA : agenda
-    MEDICO ||--o{ CONSULTA : atende
-    SALA ||--o{ CONSULTA : ocorre_em
-    AGENDA ||--o{ CONSULTA : ocupa
-    CONVENIO |o--o{ CONSULTA : cobre
+    PACIENTE_CONVENIO |o--o{ CONSULTA : cobre
     CONSULTA ||--o{ PAGAMENTO : gera
     CONSULTA ||--o{ LEMBRETE : envia
     CONSULTA ||--o| ACOMPANHAMENTO : gera
 
     PACIENTE ||--|| PRONTUARIO : possui
-    PRONTUARIO ||--o{ EVOLUCAO_PRONTUARIO : registra
     CONSULTA ||--o| EVOLUCAO_PRONTUARIO : gera
-    CID |o--o{ EVOLUCAO_PRONTUARIO : classifica
+    EVOLUCAO_PRONTUARIO ||--o{ EVOLUCAO_CID : registra
+    CID ||--o{ EVOLUCAO_CID : classifica
 
     CONSULTA ||--o{ PRESCRICAO : origina
     PRESCRICAO ||--|{ ITEM_PRESCRICAO : contem
     MEDICAMENTO ||--o{ ITEM_PRESCRICAO : compoe
 
     CONSULTA ||--o{ EXAME : solicita
-    PACIENTE ||--o{ EXAME : realiza
     TIPO_EXAME ||--o{ EXAME : classifica
     FUNCIONARIO |o--o{ EXAME : realizado_por
     LABORATORIO_EXTERNO |o--o{ EXAME : processa
@@ -280,10 +277,9 @@ erDiagram
 
     PESSOA {
         int id_pessoa PK
-        varchar cpf UK
+        char cpf UK
         varchar nome
         varchar sobrenome
-        varchar sexo
         varchar email
         date data_nascimento
     }
@@ -294,8 +290,8 @@ erDiagram
         varchar numero
         varchar bairro
         varchar cidade
-        varchar estado
-        varchar cep
+        char estado
+        char cep
         varchar complemento
     }
     TELEFONE_PESSOA {
@@ -321,7 +317,7 @@ erDiagram
     }
     ESPECIALIDADE {
         int id_especialidade PK
-        varchar nome
+        varchar nome UK
     }
     MEDICO_ESPECIALIDADE {
         int id_medico PK, FK
@@ -330,7 +326,7 @@ erDiagram
     }
     ALERGIA {
         int id_alergia PK
-        varchar descricao
+        varchar descricao UK
     }
     PACIENTE_ALERGIA {
         int id_paciente PK, FK
@@ -340,13 +336,14 @@ erDiagram
     }
     CONVENIO {
         int id_convenio PK
-        varchar nome
+        varchar nome UK
         varchar registro_ans
         varchar telefone_contato
     }
     PACIENTE_CONVENIO {
-        int id_paciente PK, FK
-        int id_convenio PK, FK
+        int id_paciente_convenio PK
+        int id_paciente FK
+        int id_convenio FK
         varchar numero_carteirinha
         date data_inicio
         date data_validade
@@ -354,7 +351,7 @@ erDiagram
     }
     SALA {
         int id_sala PK
-        varchar numero
+        varchar numero UK
         varchar andar
     }
     AGENDA {
@@ -369,11 +366,8 @@ erDiagram
     CONSULTA {
         int id_consulta PK
         int id_paciente FK
-        int id_medico FK
-        int id_sala FK
-        int id_convenio FK
-        int id_horario FK
-        datetime data_hora
+        int id_horario FK, UK
+        int id_paciente_convenio FK
         varchar tipo_consulta
         varchar status
         decimal valor
@@ -384,29 +378,51 @@ erDiagram
         int id_consulta FK
         decimal valor
         varchar forma_pagamento
-        date data_pagamento
+        datetime data_pagamento
+        varchar status
+    }
+    LEMBRETE {
+        int id_lembrete PK
+        int id_consulta FK
+        varchar tipo
+        datetime data_envio
+        varchar canal
+        boolean confirmado
+    }
+    ACOMPANHAMENTO {
+        int id_acompanhamento PK
+        int id_consulta FK, UK
+        date data_prevista
+        date data_realizacao
+        varchar canal
+        text evolucao_sintomas
+        text adesao_tratamento
+        text duvidas
         varchar status
     }
     PRONTUARIO {
         int id_prontuario PK
         int id_paciente FK, UK
         date data_abertura
-        text sintomas
+        text observacoes_gerais
+    }
+    EVOLUCAO_PRONTUARIO {
+        int id_evolucao PK
+        int id_consulta FK, UK
+        date data
+        varchar queixa_principal
+        text diagnostico
+        text conduta
+    }
+    EVOLUCAO_CID {
+        int id_evolucao PK, FK
+        varchar cod_cid PK, FK
+        text observacoes
     }
     CID {
         varchar cod_cid PK
         varchar descricao
         varchar categoria
-    }
-    EVOLUCAO_PRONTUARIO {
-        int id_evolucao PK
-        int id_prontuario FK
-        int id_consulta FK, UK
-        date data
-        varchar queixa_principal
-        text diagnostico
-        varchar cod_cid FK
-        text conduta
     }
     MEDICAMENTO {
         int id_medicamento PK
@@ -430,21 +446,20 @@ erDiagram
     }
     TIPO_EXAME {
         int id_tipo_exame PK
-        varchar nome
+        varchar nome UK
         decimal preco_padrao
         text preparo_necessario
     }
     LABORATORIO_EXTERNO {
         int id_laboratorio PK
         varchar nome
-        varchar cnpj
+        char cnpj UK
         varchar telefone
     }
     EXAME {
         int id_exame PK
         int id_consulta FK
         int id_tipo_exame FK
-        int id_paciente FK
         int id_funcionario_responsavel FK
         int id_laboratorio_externo FK
         date data_solicitacao
@@ -457,26 +472,7 @@ erDiagram
         int id_medico FK
         date data_resultado
         text laudo
-        varchar arquivo_anexo
-    }
-    LEMBRETE {
-        int id_lembrete PK
-        int id_consulta FK
-        varchar tipo
-        datetime data_envio
-        varchar canal
-        boolean confirmado
-    }
-    ACOMPANHAMENTO {
-        int id_acompanhamento PK
-        int id_consulta FK, UK
-        date data_prevista
-        date data_realizacao
-        varchar canal
-        text evolucao_sintomas
-        varchar adesao_tratamento
-        text duvidas
-        varchar status
+        text arquivo_anexo
     }
 ```
 
@@ -502,38 +498,38 @@ Notação: `(mín, máx)` de cada lado, lida a partir da entidade indicada.
 | MEDICO | (1,1) | disponibiliza | (0,N) | AGENDA | `AGENDA.id_medico` |
 | SALA | (1,1) | reserva | (0,N) | AGENDA | `AGENDA.id_sala` |
 | PACIENTE | (1,1) | agenda | (0,N) | CONSULTA | `CONSULTA.id_paciente` |
-| MEDICO | (1,1) | atende | (0,N) | CONSULTA | `CONSULTA.id_medico` |
-| SALA | (1,1) | ocorre em | (0,N) | CONSULTA | `CONSULTA.id_sala` |
-| AGENDA | (1,1) | ocupa | (0,N) | CONSULTA | `CONSULTA.id_horario` |
-| CONVENIO | (0,1) | cobre | (0,N) | CONSULTA | `CONSULTA.id_convenio` (opcional) |
+| AGENDA | (1,1) | ocupa | (0,1) | CONSULTA | `CONSULTA.id_horario` (único) |
+| PACIENTE_CONVENIO | (0,1) | cobre | (0,N) | CONSULTA | `CONSULTA.id_paciente_convenio` (opcional) |
 | CONSULTA | (1,1) | gera | (0,N) | PAGAMENTO | `PAGAMENTO.id_consulta` |
 | CONSULTA | (1,1) | envia | (0,N) | LEMBRETE | `LEMBRETE.id_consulta` |
 | CONSULTA | (1,1) | gera | (0,1) | ACOMPANHAMENTO | `ACOMPANHAMENTO.id_consulta` (único) |
 | PACIENTE | (1,1) | possui | (1,1) | PRONTUARIO | `PRONTUARIO.id_paciente` (único) |
-| PRONTUARIO | (1,1) | registra | (0,N) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_prontuario` |
-| CONSULTA | (1,1) | gera | (0,1) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_consulta` |
-| CID | (0,1) | classifica | (0,N) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.cod_cid` (opcional) |
+| CONSULTA | (1,1) | gera | (0,1) | EVOLUCAO_PRONTUARIO | `EVOLUCAO_PRONTUARIO.id_consulta` (único) |
+| EVOLUCAO_PRONTUARIO | (1,1) | registra | (0,N) | EVOLUCAO_CID | `EVOLUCAO_CID.id_evolucao` |
+| CID | (1,1) | classifica | (0,N) | EVOLUCAO_CID | `EVOLUCAO_CID.cod_cid` |
 | CONSULTA | (1,1) | origina | (0,N) | PRESCRICAO | `PRESCRICAO.id_consulta` |
 | PRESCRICAO | (1,1) | contém | (1,N) | ITEM_PRESCRICAO | `ITEM_PRESCRICAO.id_prescricao` |
 | MEDICAMENTO | (1,1) | compõe | (0,N) | ITEM_PRESCRICAO | `ITEM_PRESCRICAO.id_medicamento` |
 | CONSULTA | (1,1) | solicita | (0,N) | EXAME | `EXAME.id_consulta` |
-| PACIENTE | (1,1) | realiza | (0,N) | EXAME | `EXAME.id_paciente` |
 | TIPO_EXAME | (1,1) | classifica | (0,N) | EXAME | `EXAME.id_tipo_exame` |
 | FUNCIONARIO | (0,1) | realizado por | (0,N) | EXAME | `EXAME.id_funcionario_responsavel` (opcional) |
 | LABORATORIO_EXTERNO | (0,1) | processa | (0,N) | EXAME | `EXAME.id_laboratorio_externo` (opcional) |
-| EXAME | (1,1) | gera | (0,1) | RESULTADO_EXAME | `RESULTADO_EXAME.id_exame` |
+| EXAME | (1,1) | gera | (0,1) | RESULTADO_EXAME | `RESULTADO_EXAME.id_exame` (único) |
 | MEDICO | (1,1) | assinado por | (0,N) | RESULTADO_EXAME | `RESULTADO_EXAME.id_medico` |
+
+A paciente de um exame não é guardada em `EXAME`: ela é obtida pela consulta. O mesmo vale para o médico da consulta, que vem da agenda (`CONSULTA.id_horario` → `AGENDA.id_medico`).
 
 ### 8.4 Relacionamentos N:N e entidades associativas
 
-O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades associativas com **chave primária composta**:
+O modelo possui **cinco** relacionamentos N:N, todos resolvidos por entidades associativas:
 
-| Relacionamento N:N | Entidade associativa | PK composta | Atributos próprios | Justificativa |
+| Relacionamento N:N | Entidade associativa | PK | Atributos próprios | Justificativa |
 |---|---|---|---|---|
-| MEDICO ↔ ESPECIALIDADE | `MEDICO_ESPECIALIDADE` | `id_medico` + `id_especialidade` | `rqe` | O RQE é o registro do médico **naquela** especialidade; não pertence só ao médico nem só à especialidade. |
-| PACIENTE ↔ ALERGIA | `PACIENTE_ALERGIA` | `id_paciente` + `id_alergia` | `gravidade`, `data_identificacao` | A mesma alergia pode ter gravidades diferentes em pacientes diferentes. |
-| PACIENTE ↔ CONVENIO | `PACIENTE_CONVENIO` | `id_paciente` + `id_convenio` | `numero_carteirinha`, `data_inicio`, `data_validade`, `ativo` | Carteirinha e vigência pertencem ao vínculo, não ao convênio. |
-| PRESCRICAO ↔ MEDICAMENTO | `ITEM_PRESCRICAO` | `id_prescricao` + `id_medicamento` | `posologia`, `dosagem`, `duracao_tratamento` | O mesmo medicamento tem dosagens diferentes em prescrições diferentes. |
+| MEDICO ↔ ESPECIALIDADE | `MEDICO_ESPECIALIDADE` | `id_medico` + `id_especialidade` (composta) | `rqe` | O RQE é o registro do médico **naquela** especialidade; não pertence só ao médico nem só à especialidade. |
+| PACIENTE ↔ ALERGIA | `PACIENTE_ALERGIA` | `id_paciente` + `id_alergia` (composta) | `gravidade`, `data_identificacao` | A mesma alergia pode ter gravidades diferentes em pacientes diferentes. |
+| PACIENTE ↔ CONVENIO | `PACIENTE_CONVENIO` | `id_paciente_convenio` (chave própria; `id_paciente` e `id_convenio` são FKs) | `numero_carteirinha`, `data_inicio`, `data_validade`, `ativo` | Carteirinha e vigência pertencem ao vínculo, e a mesma paciente pode ter períodos distintos com o mesmo convênio. |
+| PRESCRICAO ↔ MEDICAMENTO | `ITEM_PRESCRICAO` | `id_prescricao` + `id_medicamento` (composta) | `posologia`, `dosagem`, `duracao_tratamento` | O mesmo medicamento tem dosagens diferentes em prescrições diferentes. |
+| EVOLUCAO_PRONTUARIO ↔ CID | `EVOLUCAO_CID` | `id_evolucao` + `cod_cid` (composta) | `observacoes` | Uma evolução pode registrar vários CIDs, e um CID pode aparecer em várias evoluções. |
 
 ### 8.5 Restrições de integridade
 
@@ -546,9 +542,21 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 | `UNIQUE (id_consulta)` | EVOLUCAO_PRONTUARIO | RN18 (uma evolução por consulta) |
 | `UNIQUE (id_exame)` | RESULTADO_EXAME | RN22 (um resultado por exame) |
 | `UNIQUE (id_consulta)` | ACOMPANHAMENTO | RN23 (um acompanhamento por consulta) |
+| `UNIQUE (id_horario)` | CONSULTA | RN09 e RN10 (um horário, no máximo uma consulta) |
 | `UNIQUE (id_medico, data, hora_inicio)` | AGENDA | RN10 |
+| Restrição de exclusão (sem sobreposição de intervalos) para `id_medico` e para `id_sala` | AGENDA | RN10 (horários não se sobrepõem) |
 | `CHECK (hora_fim > hora_inicio)` | AGENDA | Consistência do horário |
-| `NOT NULL (data_validade)` | PACIENTE_CONVENIO | RN05 |
+| FK composta (`id_paciente_convenio`, `id_paciente`) | CONSULTA | RN06 (o vínculo usado pertence à paciente) |
+| `UNIQUE (id_convenio, numero_carteirinha)` | PACIENTE_CONVENIO | Carteirinha única por convênio |
+| Índice único parcial sobre `id_paciente` com `ativo = TRUE` | PACIENTE_CONVENIO | RN05 (pendente de validação, ver seção 10) |
+| `CHECK (data_validade > data_inicio)` | PACIENTE_CONVENIO | Consistência da vigência |
+| `CHECK` de status e data (pendente não tem data; pago tem data) | PAGAMENTO | RN14 |
+| `CHECK` (realizado exige data de realização) | ACOMPANHAMENTO | Consistência do status |
+| `CHECK (validade >= data_emissao)` | PRESCRICAO | Consistência da validade |
+| `CHECK (data_realizacao >= data_solicitacao)` | EXAME | Consistência das datas |
+| `CHECK` de formato (CPF, CEP, CNPJ, CRM, CID, UF, tipo sanguíneo) | vários | Padronização dos dados |
+
+**Regras de processo (não garantidas pelo banco).** Algumas regras dependem do sistema que usa o banco, e não de restrições no próprio banco: os três horários oferecidos pela IA (RN11), a confirmação da consulta só após o pagamento ou o convênio (RN13), os três lembretes (RN15), a geração de evolução ao concluir a consulta (RN18), a geração do acompanhamento (RN23) e a proibição de sobreposição de consultas da mesma paciente, inclusive com médicos diferentes.
 
 **Domínios de status**
 
@@ -559,12 +567,16 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 | `PAGAMENTO.status` | pendente, pago, estornado (`data_pagamento` fica nula enquanto pendente) |
 | `LEMBRETE.tipo` | aviso, confirmacao_presenca |
 | `ACOMPANHAMENTO.status` | pendente, realizado, sem retorno |
+| `EXAME.status` | solicitado, coletado, concluido |
+| `PACIENTE_ALERGIA.gravidade` | leve, moderada, grave |
+| `MEDICAMENTO.tarja` | livre, amarela, vermelha, preta |
+| `PACIENTE.tipo_sanguineo` | A+, A-, B+, B-, AB+, AB-, O+, O- |
 
 ---
 
 ## 9. Decisões de modelagem
 
-**Generalização de PESSOA.** Os dados comuns (CPF, nome, sobrenome, sexo, e-mail e data de nascimento) ficam em `PESSOA`, especializada em `PACIENTE` e `FUNCIONARIO`. Isso evita cadastro duplicado: uma médica que também é paciente da clínica tem um único registro de pessoa. A cardinalidade `(0,1)` do lado da pessoa indica que ela pode não exercer nenhum dos papéis; o `(1,1)` do outro lado garante que todo paciente ou funcionário seja uma pessoa.
+**Generalização de PESSOA.** Os dados comuns (CPF, nome, sobrenome, e-mail e data de nascimento) ficam em `PESSOA`, especializada em `PACIENTE` e `FUNCIONARIO`. Isso evita cadastro duplicado: uma médica que também é paciente da clínica tem um único registro de pessoa. A cardinalidade `(0,1)` do lado da pessoa indica que ela pode não exercer nenhum dos papéis; o `(1,1)` do outro lado garante que todo paciente ou funcionário seja uma pessoa.
 
 **MEDICO como especialização de FUNCIONARIO.** Todo médico é contratado pela clínica, então herda `cargo` e `data_contratacao` de `FUNCIONARIO` e acrescenta apenas o `crm`. Com isso o CRM deixa de existir como campo opcional em `FUNCIONARIO` e fica em um único lugar.
 
@@ -574,13 +586,13 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 
 **Lembretes e acompanhamento registrados.** `LEMBRETE` guarda cada mensagem enviada pela IA e a resposta de confirmação de presença (RN15), base para medir comparecimento. `ACOMPANHAMENTO` nasce com a data prevista de 1 semana após a consulta e só é concluído quando o profissional registra o contato, tirando o acompanhamento da memória do profissional (problema 1, RN23).
 
-**Convênio opcional na consulta.** `CONSULTA.id_convenio` aceita nulo para permitir atendimentos particulares (RN07).
+**Convênio opcional na consulta.** `CONSULTA.id_paciente_convenio` aceita nulo para permitir atendimentos particulares (RN07). A consulta referencia o vínculo paciente-convênio, e não apenas o convênio, para garantir que o plano usado pertence à paciente.
 
 **PAGAMENTO vinculado à CONSULTA.** Resolve o problema 4: toda cobrança fica ligada ao atendimento que a originou, e a clínica passa a ter histórico financeiro por consulta. A relação é `(0,N)` porque uma consulta coberta por convênio pode não gerar pagamento direto e uma consulta particular pode ter mais de uma tentativa (ex.: pagamento recusado e depois aprovado).
 
-**Prontuário único com várias evoluções.** `PRONTUARIO` representa o histórico da paciente (um por paciente) e `EVOLUCAO_PRONTUARIO` registra cada atendimento, resolvendo o problema 2.
+**Prontuário único com várias evoluções.** `PRONTUARIO` representa o histórico da paciente (um por paciente) e `EVOLUCAO_PRONTUARIO` registra cada atendimento, resolvendo o problema 2. A evolução referencia a consulta; o prontuário da paciente é alcançado pelo paciente, sem um `id_prontuario` redundante.
 
-**CID como tabela de referência.** O código CID-10 deixou de ser texto livre e passou a ser FK para `CID`. Isso padroniza os diagnósticos e permite relatórios por doença (ex.: quantas pacientes com endometriose).
+**CID como tabela de referência.** O código CID-10 deixou de ser texto livre. Ele é registrado em `EVOLUCAO_CID`, que resolve a relação N:N entre evolução e CID. Isso padroniza os diagnósticos e permite relatórios por doença (ex.: quantas pacientes com endometriose).
 
 **TIPO_EXAME e LABORATORIO_EXTERNO separados.** Evitam repetir nome, preço e preparo a cada solicitação. O laboratório é opcional porque nem todo exame é feito fora da clínica.
 
@@ -599,13 +611,14 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 - [ ] O acompanhamento pode ser disparado automaticamente pela IA, ou só o profissional confirma?
 - [ ] Qual é a política de cancelamento (prazo mínimo, reembolso e multa)?
 
-### Entregas ainda não feitas
+### Entregas
 
-- [ ] Escolher o SGBD e registrar a escolha (pendência 1 do modelo lógico).
-- [ ] Script SQL completo: CREATE DATABASE, CREATE TABLE, constraints, INSERT, SELECT, JOIN, UPDATE, DELETE, consultas gerenciais e de auditoria.
-- [ ] Massa de dados para testar relacionamentos, restrições e integridade.
-- [ ] Alinhar o DER ao modelo lógico (ver seção 13).
-- [ ] Apresentação conforme o manual específico do professor.
+- [x] Escolher o SGBD e registrar a escolha: PostgreSQL, hospedado no Supabase.
+- [x] Script de criação das tabelas (DDL), com restrições, chaves e índices.
+- [x] Massa de dados de exemplo para testar relacionamentos e restrições.
+- [ ] Consultas gerenciais, consultas de auditoria e testes de restrição.
+- [ ] Alinhar o diagrama `.drawio` e o dicionário de dados ao modelo lógico.
+- [ ] Apresentação conforme o manual do professor.
 
 ### Evoluções previstas no modelo
 
@@ -616,9 +629,8 @@ O modelo possui **quatro** relacionamentos N:N, todos resolvidos por entidades a
 
 | Revisão | Alterações |
 |---|---|
-| Diário AL05 | Inclusão do CID como tabela de referência para os diagnósticos |
-| Diário AL06 | Auditoria do modelo lógico: PKs, FKs e entidades associativas revisadas |
 | Revisão de consistência | README, dicionário, DER e fluxograma alinhados; `MEDICO` passa a especializar `FUNCIONARIO`; novas tabelas `ACOMPANHAMENTO` e `LEMBRETE`; FK `CONSULTA.id_horario`; `LABORATORIO_EXTERNO` e `CID` incluídos no DER; cardinalidades e restrições corrigidas |
+| Revisão do modelo físico | SGBD definido (PostgreSQL); `PESSOA.sexo` removido; `EVOLUCAO_CID` incluída no ER; `CONSULTA` referencia o vínculo `PACIENTE_CONVENIO`; `PACIENTE_CONVENIO` com chave própria; restrições de exclusão para a agenda; diagrama ER e cardinalidades atualizados ao script SQL |
 
 ---
 
@@ -696,8 +708,7 @@ Essas aplicações envolvem dados sensíveis e exigem validação ética e conse
 
 **Centro de Ginecologia Natural e Emocional**\
 **Versão:** documentação preliminar derivada do `DER_atualizado_etapa1.mmd`\
-**SGBD:** ainda não definido; tipos e restrições estão descritos de
-forma relacional genérica.
+**SGBD:** PostgreSQL (hospedado no Supabase).
 
 ## 1. Decisões adotadas nesta versão
 
@@ -722,7 +733,7 @@ forma relacional genérica.
 7.  A prescrição pode existir sem itens; se houver item, dosagem e
     posologia são obrigatórias.
 8.  `ACOMPANHAMENTO` é opcional e manual, limitado a um por consulta.
-9.  Os tipos são indicativos. A sintaxe final depende do SGBD escolhido.
+9.  Os tipos correspondem ao PostgreSQL usado nos scripts da pasta `sql/`.
 
 ## 2. Esquema relacional
 
@@ -731,10 +742,7 @@ Notação: **PK** = chave primária; **FK** = chave estrangeira; **UQ** =
 
 ### 2.1 Pessoas e cadastro
 
-**PESSOA** - `id_pessoa` --- inteiro, PK - `cpf` --- texto(11), NN, UQ -
-`nome` --- texto, NN - `sobrenome` --- texto, NN --- texto,
-opcional - `email` --- texto, opcional - `data_nascimento` --- data,
-opcional
+**PESSOA** - `id_pessoa` --- inteiro, PK - `cpf` --- texto(11), NN, UQ - `nome` --- texto, NN - `sobrenome` --- texto, NN - `email` --- texto, opcional - `data_nascimento` --- data, opcional
 
 **ENDERECO_PESSOA** - `id_endereco` --- inteiro, PK - `id_pessoa` ---
 inteiro, FK → `PESSOA.id_pessoa`, NN - `logradouro` --- texto, NN -
@@ -778,7 +786,7 @@ UQ
 UQ - `registro_ans` --- texto, opcional - `telefone_contato` --- texto,
 opcional
 
-**PACIENTE_CONVENIO** — `id_paciente_convenio` inteiro, PK; `id_paciente` inteiro, FK → `PACIENTE.id_paciente`, NN; `id_convenio` inteiro, FK → `CONVENIO.id_convenio`, NN; `numero_carteirinha` texto, NN; `data_inicio` data, NN; `data_validade` data, NN; `ativo` booleano, NN. Regra: no máximo um vínculo ativo por paciente; a implementação depende do SGBD. Para garantir que o vínculo referenciado pela consulta pertence ao mesmo paciente, é necessária uma FK composta ou validação equivalente.
+**PACIENTE_CONVENIO** — `id_paciente_convenio` inteiro, PK; `id_paciente` inteiro, FK → `PACIENTE.id_paciente`, NN; `id_convenio` inteiro, FK → `CONVENIO.id_convenio`, NN; `numero_carteirinha` texto, NN; `data_inicio` data, NN; `data_validade` data, NN; `ativo` booleano, NN. Regra: no máximo um vínculo ativo por paciente, implementado como índice único parcial sobre `id_paciente` com `ativo = TRUE`. Um mesmo convênio não pode repetir a carteirinha. Uma FK composta (`id_paciente_convenio`, `id_paciente`) em `CONSULTA` garante que o vínculo usado pertence à paciente.
 
 ### 2.3 Agenda, consultas, pagamentos e lembretes
 
@@ -789,9 +797,9 @@ opcional
 → `MEDICO.id_medico`, NN - `id_sala` --- inteiro, FK → `SALA.id_sala`,
 NN - `data` --- data, NN - `hora_inicio` --- hora, NN - `hora_fim` ---
 hora, NN - `status` --- texto, NN - CHECK: `hora_fim > hora_inicio` -
-Regra: impedir sobreposição de intervalos para o mesmo médico ou sala.
+Regras: `UNIQUE (id_medico, data, hora_inicio)`; restrição de exclusão que impede sobreposição de intervalos para o mesmo médico e para a mesma sala no mesmo dia.
 
-**CONSULTA** — `id_consulta` inteiro, PK; `id_paciente` inteiro, FK → `PACIENTE.id_paciente`, NN; `id_horario` inteiro, FK → `AGENDA.id_horario`, NN; `id_paciente_convenio` inteiro, FK → `PACIENTE_CONVENIO.id_paciente_convenio`, opcional; `tipo_consulta` texto, NN; `status` texto, NN; `valor` decimal(10,2), NN; `observacoes` texto, opcional. Regras: impedir sobreposição de consultas da mesma paciente, inclusive com médicos diferentes; só confirmar após pagamento ou convênio confirmados; validar que o vínculo de convênio pertence à paciente e está válido na data da consulta.
+**CONSULTA** — `id_consulta` inteiro, PK; `id_paciente` inteiro, FK → `PACIENTE.id_paciente`, NN; `id_horario` inteiro, FK → `AGENDA.id_horario`, NN, UQ; `id_paciente_convenio` inteiro, FK → `PACIENTE_CONVENIO.id_paciente_convenio`, opcional; `tipo_consulta` texto, NN; `status` texto, NN; `valor` decimal(10,2), NN; `observacoes` texto, opcional. Regras: `UNIQUE (id_horario)`, uma consulta por horário da agenda; o vínculo de convênio pertence à paciente, garantido pela FK composta. Regras de processo, verificadas pelo sistema (não garantidas pelo banco): impedir sobreposição de consultas da mesma paciente, inclusive com médicos diferentes; confirmar a consulta só após pagamento ou convênio confirmados; checar se o convênio está válido na data da consulta.
 
 **PAGAMENTO** - `id_pagamento` --- inteiro, PK - `id_consulta` ---
 inteiro, FK → `CONSULTA.id_consulta`, NN - `valor` --- decimal(10,2),
@@ -804,8 +812,7 @@ inteiro, FK → `CONSULTA.id_consulta`, NN - `tipo` --- texto, NN -
 `data_envio` --- data/hora, opcional - `canal` --- texto, NN -
 `confirmado` --- booleano, NN - Regra de processo: duas
 mensagens/lembretes por consulta conforme regra definida, incluindo um
-lembrete para confirmação de presença. A contagem deve ser validada por
-lógica transacional.
+lembrete para confirmação de presença. A contagem é regra de aplicação, não garantida pelo banco.
 
 **ACOMPANHAMENTO** - `id_acompanhamento` --- inteiro, PK - `id_consulta` ---
 inteiro, FK → `CONSULTA.id_consulta`, NN, UQ - `data_prevista` --- data,
@@ -822,7 +829,7 @@ inteiro, FK → `PACIENTE.id_paciente`, NN, UQ - `data_abertura` --- data,
 NN - `observacoes_gerais` --- texto, opcional - Regra: exatamente um
 prontuário por paciente.
 
-**EVOLUCAO_PRONTUARIO** — `id_evolucao` inteiro, PK; `id_consulta` inteiro, FK → `CONSULTA.id_consulta`, NN, UQ; `data` data, NN; `queixa_principal` texto, opcional; `diagnostico` texto, opcional; `conduta` texto, opcional. O prontuário correspondente é obtido por consulta → paciente → prontuário, sem duplicar `id_prontuario`. Cada consulta concluída deve gerar uma evolução; validar no fechamento do atendimento.
+**EVOLUCAO_PRONTUARIO** — `id_evolucao` inteiro, PK; `id_consulta` inteiro, FK → `CONSULTA.id_consulta`, NN, UQ; `data` data, NN; `queixa_principal` texto, opcional; `diagnostico` texto, opcional; `conduta` texto, opcional. O prontuário correspondente é obtido por consulta → paciente → prontuário, sem duplicar `id_prontuario`. Cada consulta concluída deve gerar uma evolução; regra de aplicação, validada no fechamento do atendimento.
 
 **CID** - `cod_cid` --- texto, PK - `descricao` --- texto, NN -
 `categoria` --- texto, opcional
