@@ -198,7 +198,7 @@ As regras abaixo representam as condições levantadas para o funcionamento da c
 
 O DER representa as entidades, seus atributos, relacionamentos e cardinalidades. A versão revisada contém **29 entidades e 33 relacionamentos**.
 
-Arquivo editável: [`DER_Clinica_Entrega_Final_Revisado.drawio`](DER_Clinica_Entrega_Final_Revisado.drawio)
+Arquivo editável: [`DER.drawio`](DER.drawio)
 
 O modelo contempla os seguintes domínios:
 
@@ -215,7 +215,7 @@ O modelo contempla os seguintes domínios:
 
 O modelo lógico transforma as entidades e relacionamentos do DER em tabelas relacionais, com atributos, chaves e restrições.
 
-Arquivo: [`Modelo_Logico_Relacional_Versao_Corrigida.txt`](Modelo_Logico_Relacional_Versao_Corrigida.txt)
+Arquivo: [`modelo_logico.txt`](modelo_logico.txt)
 
 O modelo possui **29 tabelas**. Entre as decisões estruturais estão:
 
@@ -234,7 +234,7 @@ O modelo possui **29 tabelas**. Entre as decisões estruturais estão:
 
 A documentação de normalização apresenta exemplos do próprio modelo, com dependências funcionais e justificativas das decisões adotadas. O objetivo é demonstrar a aplicação das três formas normais sem inventar problemas que não foram identificados.
 
-Documento completo: [`Normalizacao_Dependencias_Funcionais_Clinica.md`](Normalizacao_Dependencias_Funcionais_Clinica.md)
+A análise está documentada nesta própria seção, com exemplos do modelo.
 
 ### 9.1 Primeira Forma Normal (1FN)
 
@@ -274,7 +274,7 @@ Essas decisões reduzem redundância e ajudam a manter a consistência dos dados
 
 O dicionário descreve as tabelas e os atributos do modelo, incluindo tipos, obrigatoriedade, chaves e regras relevantes.
 
-Arquivo: [`Dicionario_de_Dados_Versao_Corrigida.txt`](Dicionario_de_Dados_Versao_Corrigida.txt)
+Arquivo: [`dicionario_de_dados.txt`](dicionario_de_dados.txt)
 
 O documento deve permanecer alinhado ao modelo lógico e ao script SQL efetivamente utilizado.
 
@@ -282,13 +282,13 @@ O documento deve permanecer alinhado ao modelo lógico e ao script SQL efetivame
 
 A implementação utiliza **MySQL 8.0.16 ou superior** e contempla a criação do banco, tabelas, chaves primárias e estrangeiras, restrições e relacionamentos.
 
-Arquivo de criação: [`script_criacao_banco.sql`](script_criacao_banco.sql)
+Arquivo de criação: [`script_sql.txt`](script_sql.txt)
 
 ## 12. Massa de dados
 
 O projeto inclui dados fictícios para testar os relacionamentos e executar as consultas do banco.
 
-Arquivo de carga: [`script_massa_dados.sql`](script_massa_dados.sql)
+Arquivo de carga: [`script_massa_dados.txt`](script_massa_dados.txt)
 
 A massa é destinada a testes acadêmicos e não contém dados reais de pacientes. Como conjunto demonstrativo, ela não representa necessariamente todos os cenários e registros previstos nas regras de negócio; por isso, os resultados das consultas de auditoria devem ser interpretados dentro desse contexto.
 
@@ -378,18 +378,18 @@ Os arquivos do projeto são mantidos na raiz do repositório para facilitar o ac
 | Arquivo | Finalidade |
 |---|---|
 | `README.md` | Documentação geral do projeto. |
-| `DER_Clinica_Entrega_Final_Revisado.drawio` | Diagrama entidade-relacionamento revisado e editável. |
-| `Modelo_Logico_Relacional_Versao_Corrigida.txt` | Modelo lógico relacional. |
-| `Dicionario_de_Dados_Versao_Corrigida.txt` | Dicionário de dados. |
-| `Normalizacao_Dependencias_Funcionais_Clinica.md` | Análise das formas normais e dependências funcionais. |
-| `script_criacao_banco.sql` | Criação do banco e das tabelas. |
-| `script_massa_dados.sql` | Inserção dos dados fictícios de teste. |
+| `DER.drawio` | Diagrama entidade-relacionamento revisado e editável. |
+| `modelo_logico.txt` | Modelo lógico relacional. |
+| `dicionario_de_dados.txt` | Dicionário de dados. |
+| `#9-normalização` | Análise das formas normais e dependências funcionais. |
+| `script_sql.txt` | Criação do banco e das tabelas. |
+| `script_massa_dados.txt` | Inserção dos dados fictícios de teste. |
 | `consultas_gerenciamento_auditoria.sql` | Consultas gerenciais e de auditoria. |
 | `Fluxograma.drawio.xml` | Fluxograma do processo de atendimento. |
 | `DIARIO_DE_BORDO_AL05.pdf` | Registro da atividade AL05. |
 | `DIARIO_DE_BORDO_AL06.pdf` | Registro da atividade AL06. |
 
-> **Atenção aos nomes dos arquivos:** os links acima pressupõem que os arquivos SQL sejam enviados à raiz com os nomes `script_criacao_banco.sql` e `script_massa_dados.sql`. Se forem mantidos com outros nomes, atualize os links desta documentação para corresponder exatamente aos nomes no GitHub.
+> Todos os links desta documentação correspondem aos nomes dos arquivos exibidos na raiz do repositório.
 
 ## 17. Como executar
 
@@ -402,8 +402,8 @@ Os arquivos do projeto são mantidos na raiz do repositório para facilitar o ac
 
 1. Clone ou baixe este repositório.
 2. Abra o MySQL Workbench e conecte-se ao servidor.
-3. Execute `script_criacao_banco.sql` para criar o banco e as tabelas.
-4. Execute `script_massa_dados.sql` para inserir os registros fictícios.
+3. Execute `script_sql.txt` para criar o banco e as tabelas.
+4. Execute `script_massa_dados.txt` para inserir os registros fictícios.
 5. Execute, individualmente, as consultas de `consultas_gerenciamento_auditoria.sql`.
 
 **Importante:** os scripts de criação e carga devem corresponder à mesma versão do modelo. Execute a criação antes da inserção dos dados. As consultas podem ser executadas separadamente, conforme a análise desejada.
