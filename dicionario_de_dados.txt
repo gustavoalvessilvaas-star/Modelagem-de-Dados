@@ -1,0 +1,1066 @@
+DICIONÁRIO DE DADOS DETALHADO POR ENTIDADE E ATRIBUTO
+
+Versão preparada para alinhamento com as regras de negócio RN01–RN23
+
+LEGENDA
+PK = Chave Primária | FK = Chave Estrangeira | UK = Valor Único | NN = Não Nulo
+NULL = aceita ausência de valor | NOT NULL = preenchimento obrigatório
+
+==============================================================================
+TABELA: PESSOA
+------------------------------------------------------------------------------
+Campo: id_pessoa
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico da pessoa (base para Paciente, Funcionario e Medico)
+
+Campo: cpf
+  Tipo: VARCHAR(11)
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: CPF da pessoa (somente numeros); valor unico por pessoa
+
+Campo: nome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Primeiro nome da pessoa
+
+Campo: sobrenome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Sobrenome da pessoa
+
+Campo: sexo
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Sexo/genero informado pela pessoa
+
+Campo: email
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Endereco de e-mail de contato
+
+Campo: data_nascimento
+  Tipo: DATE
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Data de nascimento da pessoa
+
+Restrições e regras da tabela:
+  - UNIQUE(cpf); CPF obrigatório e único (RN01).
+
+==============================================================================
+TABELA: ENDERECO_PESSOA
+------------------------------------------------------------------------------
+Campo: id_endereco
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do endereco
+
+Campo: id_pessoa
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Pessoa a quem o endereco pertence
+
+Campo: logradouro
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Nome da rua/avenida
+
+Campo: numero
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Numero do imovel
+
+Campo: bairro
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Bairro do endereco
+
+Campo: cidade
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Cidade do endereco
+
+Campo: estado
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Sigla do estado (UF)
+
+Campo: cep
+  Tipo: VARCHAR(8)
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Codigo de Enderecamento Postal
+
+Campo: complemento
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Complemento do endereco (apto, bloco, etc.)
+
+==============================================================================
+TABELA: TELEFONE_PESSOA
+------------------------------------------------------------------------------
+Campo: id_telefone
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do telefone
+
+Campo: id_pessoa
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Pessoa a quem o telefone pertence
+
+Campo: numero
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Numero de telefone com DDD
+
+==============================================================================
+TABELA: PACIENTE
+------------------------------------------------------------------------------
+Campo: id_paciente
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do paciente
+
+Campo: id_pessoa
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Pessoa correspondente a este paciente
+
+Campo: tipo_sanguineo
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Tipo sanguineo do paciente (ex.: O+, A-)
+
+Restrições e regras da tabela:
+  - UNIQUE(id_pessoa); cada paciente corresponde a exatamente uma pessoa (RN02).
+
+==============================================================================
+TABELA: FUNCIONARIO
+------------------------------------------------------------------------------
+Campo: id_funcionario
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id funcionario da entidade Funcionario.
+
+Campo: id_pessoa
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Id pessoa da entidade Funcionario.
+
+Campo: cargo
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Cargo da entidade Funcionario.
+
+Campo: data_contratacao
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data contratacao da entidade Funcionario.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_pessoa); cada funcionário corresponde a exatamente uma pessoa (RN02).
+
+==============================================================================
+TABELA: MEDICO
+------------------------------------------------------------------------------
+Campo: id_medico
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id medico da entidade Medico.
+
+Campo: id_funcionario
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Id funcionario da entidade Medico.
+
+Campo: crm
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: Crm da entidade Medico.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_funcionario); CRM obrigatório e único (RN03).
+
+==============================================================================
+TABELA: ESPECIALIDADE
+------------------------------------------------------------------------------
+Campo: id_especialidade
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico da especialidade medica
+
+Campo: nome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: Nome da especialidade (ex.: Ginecologia)
+
+==============================================================================
+TABELA: MEDICO_ESPECIALIDADE
+------------------------------------------------------------------------------
+Campo: id_medico
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Medico que possui a especialidade
+
+Campo: id_especialidade
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Especialidade associada ao medico
+
+Campo: rqe
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Registro de Qualificacao de Especialista referente a essa combinacao
+
+Restrições e regras da tabela:
+  - PK composta (id_medico, id_especialidade); cada médico deve possuir ao menos uma especialidade (RN04), validada por transação/trigger.
+
+==============================================================================
+TABELA: ALERGIA
+------------------------------------------------------------------------------
+Campo: id_alergia
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico da alergia cadastrada
+
+Campo: descricao
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: Descricao da alergia (ex.: Dipirona, Latex)
+
+==============================================================================
+TABELA: PACIENTE_ALERGIA
+------------------------------------------------------------------------------
+Campo: id_paciente
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Paciente que possui a alergia
+
+Campo: id_alergia
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Alergia associada ao paciente
+
+Campo: gravidade
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Grau da reação alérgica (leve, moderada ou grave); obrigatório conforme RN08.
+
+Campo: data_identificacao
+  Tipo: DATE
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Data em que a alergia foi identificada/registrada
+
+==============================================================================
+TABELA: CONVENIO
+------------------------------------------------------------------------------
+Campo: id_convenio
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do convenio/plano de saude
+
+Campo: nome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: Nome do convenio
+
+Campo: registro_ans
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Numero de registro na ANS
+
+Campo: telefone_contato
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Telefone de contato do convenio
+
+==============================================================================
+TABELA: PACIENTE_CONVENIO
+------------------------------------------------------------------------------
+Campo: id_paciente_convenio
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id paciente convenio da entidade Paciente Convenio.
+
+Campo: id_paciente
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Id paciente da entidade Paciente Convenio.
+
+Campo: id_convenio
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Id convenio da entidade Paciente Convenio.
+
+Campo: numero_carteirinha
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Numero carteirinha da entidade Paciente Convenio.
+
+Campo: data_inicio
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data inicio da entidade Paciente Convenio.
+
+Campo: data_validade
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data validade da entidade Paciente Convenio.
+
+Campo: ativo
+  Tipo: BOOLEAN
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Ativo da entidade Paciente Convenio.
+
+Restrições e regras da tabela:
+  - FKs para PACIENTE e CONVENIO; validar data_validade na utilização (RN05/RN06).
+  - A regra fornecida permite vários vínculos de convênio por paciente; não foi criada restrição de apenas um vínculo ativo, pois ela não aparece na RN05 enviada nesta solicitação.
+
+==============================================================================
+TABELA: SALA
+------------------------------------------------------------------------------
+Campo: id_sala
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico da sala
+
+Campo: numero
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: Numero/identificacao da sala
+
+Campo: andar
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Andar onde a sala esta localizada
+
+==============================================================================
+TABELA: AGENDA
+------------------------------------------------------------------------------
+Campo: id_horario
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do horario de agenda
+
+Campo: id_medico
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Medico ao qual o horario pertence
+
+Campo: id_sala
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Sala reservada para o horario
+
+Campo: data
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data do horario disponivel/reservado
+
+Campo: hora_inicio
+  Tipo: TIME
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Horario de inicio do bloco de agenda. UNIQUE (id_medico, data, hora_inicio).
+
+Campo: hora_fim
+  Tipo: TIME
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Horario de termino do bloco de agenda. CHECK: hora_fim > hora_inicio.
+
+Campo: status
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Situacao do horario. Dominio: disponivel, reservado, ocupado, bloqueado.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_medico, data, hora_inicio); CHECK(hora_fim > hora_inicio).
+  - Impedir sobreposição de intervalos para o mesmo médico e para a mesma sala (RN09/RN10).
+  - O status 'ocupado' somente após confirmação da consulta (RN12).
+
+==============================================================================
+TABELA: CONSULTA
+------------------------------------------------------------------------------
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id consulta da entidade Consulta.
+
+Campo: id_paciente
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Id paciente da entidade Consulta.
+
+Campo: id_horario
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Id horario da entidade Consulta.
+
+Campo: id_paciente_convenio
+  Tipo: INT
+  Obrigatoriedade: NULL
+  Chave: FK
+  Descrição: Vínculo paciente-convênio utilizado nesta consulta; nulo para atendimento particular. Deve pertencer à mesma paciente de id_paciente.
+
+Campo: tipo_consulta
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Tipo consulta da entidade Consulta.
+
+Campo: status
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Status da consulta. Dominio: agendada, confirmada, realizada, cancelada, remarcada, falta.
+
+Campo: valor
+  Tipo: DECIMAL(10,2)
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Valor da entidade Consulta.
+
+Campo: observacoes
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Observacoes da entidade Consulta.
+
+Restrições e regras da tabela:
+  - id_paciente obrigatório; id_horario obrigatório; id_paciente_convenio opcional (RN07/RN09).
+  - Se id_paciente_convenio não for nulo, garantir que o vínculo pertença ao mesmo id_paciente da consulta e esteja válido (RN06/RN07).
+  - A confirmação depende de pagamento aprovado ou confirmação de convênio (RN13); atualizar status do pagamento conforme RN14.
+
+==============================================================================
+TABELA: PAGAMENTO
+------------------------------------------------------------------------------
+Campo: id_pagamento
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id pagamento da entidade Pagamento.
+
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Id consulta da entidade Pagamento.
+
+Campo: valor
+  Tipo: DECIMAL(10,2)
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Valor da entidade Pagamento.
+
+Campo: forma_pagamento
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Forma pagamento da entidade Pagamento.
+
+Campo: data_pagamento
+  Tipo: DATETIME
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Data pagamento da entidade Pagamento.
+
+Campo: status
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Status do pagamento. Dominio: pendente, pago, estornado. data_pagamento fica nula enquanto pendente.
+
+==============================================================================
+TABELA: LEMBRETE
+------------------------------------------------------------------------------
+Campo: id_lembrete
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id lembrete da entidade Lembrete.
+
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Id consulta da entidade Lembrete.
+
+Campo: tipo
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Tipo do lembrete. Dominio: aviso, confirmacao_presenca.
+
+Campo: data_envio
+  Tipo: DATETIME
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data e hora programadas para envio do lembrete.
+
+Campo: canal
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Canal da entidade Lembrete.
+
+Campo: confirmado
+  Tipo: BOOLEAN
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Confirmado da entidade Lembrete.
+
+Campo: numero_lembrete
+  Tipo: SMALLINT
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Ordem do lembrete na consulta (1, 2 ou 3); usar UNIQUE(id_consulta, numero_lembrete) e CHECK entre 1 e 3.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_consulta, numero_lembrete); CHECK(numero_lembrete BETWEEN 1 AND 3).
+  - Exatamente três lembretes por consulta e exatamente um do tipo confirmacao_presenca; garantir com trigger/validação transacional (RN15).
+
+==============================================================================
+TABELA: ACOMPANHAMENTO
+------------------------------------------------------------------------------
+Campo: id_follow_up
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id follow up da entidade Follow Up.
+
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Consulta acompanhada; FK obrigatória e UNIQUE para permitir no máximo um acompanhamento por consulta.
+
+Campo: data_prevista
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data prevista do acompanhamento, definida para sete dias após a consulta, conforme RN23.
+
+Campo: data_realizacao
+  Tipo: DATE
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Data realizacao da entidade Follow Up.
+
+Campo: canal
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Canal da entidade Follow Up.
+
+Campo: evolucao_sintomas
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Evolucao sintomas da entidade Follow Up.
+
+Campo: adesao_tratamento
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Adesao tratamento da entidade Follow Up.
+
+Campo: duvidas
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Duvidas da entidade Follow Up.
+
+Campo: status
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Status do follow-up. Dominio: pendente, realizado, sem retorno.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_consulta); data_prevista obrigatória e igual à data da consulta + 7 dias (RN23), validada por trigger/aplicação.
+
+==============================================================================
+TABELA: PRONTUARIO
+------------------------------------------------------------------------------
+Campo: id_prontuario
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do prontuario
+
+Campo: id_paciente
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Paciente dono do prontuario (um por paciente)
+
+Campo: data_abertura
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data de abertura do prontuario
+
+Campo: observacoes_gerais
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Observacoes gerais da entidade Prontuario.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_paciente); exatamente um prontuário por paciente (RN17).
+
+==============================================================================
+TABELA: EVOLUCAO_PRONTUARIO
+------------------------------------------------------------------------------
+Campo: id_evolucao
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Id evolucao da entidade Evolucao Prontuario.
+
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Id consulta da entidade Evolucao Prontuario.
+
+Campo: data
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data da entidade Evolucao Prontuario.
+
+Campo: queixa_principal
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Queixa principal da entidade Evolucao Prontuario.
+
+Campo: diagnostico
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Diagnostico da entidade Evolucao Prontuario.
+
+Campo: conduta
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Conduta da entidade Evolucao Prontuario.
+
+Restrições e regras da tabela:
+  - UNIQUE(id_consulta); exigir uma evolução quando a consulta passar para realizada (RN18).
+  - Paciente do prontuário é obtida pela consulta; validar que a consulta pertence à paciente dona do prontuário.
+
+==============================================================================
+TABELA: CID
+------------------------------------------------------------------------------
+Campo: cod_cid
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Cod cid da entidade Cid.
+
+Campo: descricao
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Descricao da entidade Cid.
+
+Campo: categoria
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Categoria da entidade Cid.
+
+==============================================================================
+TABELA: EVOLUCAO_CID
+------------------------------------------------------------------------------
+Campo: id_evolucao
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Id evolucao da entidade Evolucao Cid.
+
+Campo: cod_cid
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Cod cid da entidade Evolucao Cid.
+
+Campo: observacoes
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Observacoes da entidade Evolucao Cid.
+
+==============================================================================
+TABELA: MEDICAMENTO
+------------------------------------------------------------------------------
+Campo: id_medicamento
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do medicamento
+
+Campo: nome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Nome comercial do medicamento
+
+Campo: principio_ativo
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Principio ativo do medicamento
+
+Campo: fabricante
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Fabricante/laboratorio do medicamento
+
+Campo: tarja
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Tipo de tarja (livre, amarela, vermelha, preta)
+
+==============================================================================
+TABELA: PRESCRICAO
+------------------------------------------------------------------------------
+Campo: id_prescricao
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico da prescricao
+
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Consulta que originou a prescricao
+
+Campo: data_emissao
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data de emissao da prescricao
+
+Campo: validade
+  Tipo: DATE
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Data de validade da prescricao
+
+Restrições e regras da tabela:
+  - Toda prescrição deve possuir pelo menos um ITEM_PRESCRICAO; validar no fechamento/transação (RN19).
+
+==============================================================================
+TABELA: ITEM_PRESCRICAO
+------------------------------------------------------------------------------
+Campo: id_prescricao
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Prescricao a que este item pertence
+
+Campo: id_medicamento
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK, FK
+  Descrição: Medicamento prescrito neste item
+
+Campo: posologia
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Instrucoes de uso do medicamento
+
+Campo: dosagem
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Dosagem prescrita
+
+Campo: duracao_tratamento
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Duracao do tratamento com este medicamento
+
+Restrições e regras da tabela:
+  - PK composta (id_prescricao, id_medicamento); posologia e dosagem NOT NULL (RN20).
+
+==============================================================================
+TABELA: TIPO_EXAME
+------------------------------------------------------------------------------
+Campo: id_tipo_exame
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do tipo de exame
+
+Campo: nome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: UK
+  Descrição: Nome do tipo de exame (ex.: Hemograma)
+
+Campo: preco_padrao
+  Tipo: DECIMAL(10,2)
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Preco padrao cobrado por este tipo de exame
+
+Campo: preparo_necessario
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Instrucoes de preparo previo necessario
+
+==============================================================================
+TABELA: LABORATORIO_EXTERNO
+------------------------------------------------------------------------------
+Campo: id_laboratorio
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do laboratorio externo
+
+Campo: nome
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Nome do laboratorio
+
+Campo: cnpj
+  Tipo: VARCHAR(14)
+  Obrigatoriedade: NULL
+  Chave: UK
+  Descrição: CNPJ do laboratorio
+
+Campo: telefone
+  Tipo: VARCHAR
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Telefone de contato do laboratorio
+
+==============================================================================
+TABELA: EXAME
+------------------------------------------------------------------------------
+Campo: id_exame
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do exame solicitado
+
+Campo: id_consulta
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Consulta que originou a solicitacao do exame
+
+Campo: id_tipo_exame
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Tipo de exame solicitado
+
+Campo: id_funcionario_responsavel
+  Tipo: INT
+  Obrigatoriedade: NULL
+  Chave: FK
+  Descrição: Funcionario responsavel pela coleta/execucao
+
+Campo: id_laboratorio_externo
+  Tipo: INT
+  Obrigatoriedade: NULL
+  Chave: FK
+  Descrição: Laboratorio externo que processa o exame (opcional).
+
+Campo: data_solicitacao
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data em que o exame foi solicitado
+
+Campo: data_realizacao
+  Tipo: DATE
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Data em que o exame foi efetivamente realizado
+
+Campo: status
+  Tipo: VARCHAR
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Situacao do exame (solicitado, coletado, concluido)
+
+Restrições e regras da tabela:
+  - Paciente é obtida por CONSULTA; não duplicar id_paciente (RN21).
+  - Laboratório externo opcional; funcionário responsável opcional conforme dicionário.
+
+==============================================================================
+TABELA: RESULTADO_EXAME
+------------------------------------------------------------------------------
+Campo: id_resultado
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: PK
+  Descrição: Identificador unico do resultado do exame
+
+Campo: id_exame
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK, UK
+  Descrição: Exame ao qual este resultado pertence (um resultado por exame)
+
+Campo: id_medico
+  Tipo: INT
+  Obrigatoriedade: NOT NULL
+  Chave: FK
+  Descrição: Medico que assina/valida o resultado
+
+Campo: data_resultado
+  Tipo: DATE
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Data de emissao do resultado
+
+Campo: laudo
+  Tipo: TEXT
+  Obrigatoriedade: NOT NULL
+  Chave: —
+  Descrição: Laudo textual do resultado do exame
+
+Campo: arquivo_anexo
+  Tipo: TEXT
+  Obrigatoriedade: NULL
+  Chave: —
+  Descrição: Caminho/referencia do arquivo anexado (PDF, imagem etc.)
+
+Restrições e regras da tabela:
+  - UNIQUE(id_exame); id_medico obrigatório; exigir resultado assinado quando exame estiver realizado (RN22).
+
+==============================================================================
+RELACIONAMENTOS E INTEGRIDADE REFERENCIAL
+- PESSOA 1:N ENDERECO_PESSOA; cada endereço pertence a uma pessoa.
+- PESSOA 1:N TELEFONE_PESSOA; cada telefone pertence a uma pessoa.
+- PESSOA 1:0..1 PACIENTE; cada paciente corresponde a uma pessoa.
+- PESSOA 1:0..1 FUNCIONARIO; cada funcionário corresponde a uma pessoa.
+- FUNCIONARIO 1:0..1 MEDICO; cada médico corresponde a um funcionário.
+- MEDICO 1:N MEDICO_ESPECIALIDADE; médico possui uma ou mais especialidades.
+- ESPECIALIDADE 1:0..N MEDICO_ESPECIALIDADE.
+- PACIENTE 1:0..N PACIENTE_ALERGIA; ALERGIA 1:0..N PACIENTE_ALERGIA.
+- PACIENTE 1:0..N PACIENTE_CONVENIO; CONVENIO 1:0..N PACIENTE_CONVENIO.
+- MEDICO 1:N AGENDA; SALA 1:N AGENDA.
+- PACIENTE 1:N CONSULTA; AGENDA 1:0..1 CONSULTA.
+- PACIENTE_CONVENIO 1:0..N CONSULTA; cada consulta utiliza zero ou um vínculo paciente-convênio.
+- CONSULTA 1:N PAGAMENTO; CONSULTA 1:3 LEMBRETE (exatamente três, validado adicionalmente).
+- CONSULTA 1:1 ACOMPANHAMENTO; acompanhamento previsto sete dias após a consulta.
+- PACIENTE 1:1 PRONTUARIO; PRONTUARIO 1:N EVOLUCAO_PRONTUARIO por meio das consultas da paciente.
+- CONSULTA 1:0..1 EVOLUCAO_PRONTUARIO; obrigatória quando a consulta for realizada.
+- EVOLUCAO_PRONTUARIO N:N CID por EVOLUCAO_CID.
+- CONSULTA 1:N PRESCRICAO; PRESCRICAO deve possuir 1:N ITEM_PRESCRICAO.
+- MEDICAMENTO 1:N ITEM_PRESCRICAO.
+- CONSULTA 1:N EXAME; TIPO_EXAME 1:N EXAME.
+- FUNCIONARIO 0..1:N EXAME (responsável opcional); LABORATORIO_EXTERNO 0..1:N EXAME (processamento opcional).
+- EXAME 1:0..1 RESULTADO_EXAME; resultado obrigatório quando exame estiver realizado.
+- MEDICO 1:N RESULTADO_EXAME.
+
+REGRAS DE NEGÓCIO — IMPLEMENTAÇÃO NECESSÁRIA
+RN01: UNIQUE e NOT NULL em PESSOA.cpf.
+RN02: UNIQUE e NOT NULL em PACIENTE.id_pessoa e FUNCIONARIO.id_pessoa.
+RN03: UNIQUE e NOT NULL em MEDICO.id_funcionario e MEDICO.crm; validar CRM.
+RN04: exigir pelo menos uma linha em MEDICO_ESPECIALIDADE por médico.
+RN05: permitir vários vínculos de convênio por paciente, com datas de validade.
+RN06: validar cadastro e validade do vínculo paciente-convênio no momento de usar.
+RN07: id_paciente_convenio nulo representa atendimento particular.
+RN08: gravidade obrigatória em PACIENTE_ALERGIA.
+RN09: consulta exige paciente, horário, médico e sala (médico e sala vêm de AGENDA).
+RN10: impedir sobreposição de consultas para o mesmo médico; também proteger a disponibilidade da sala.
+RN11: selecionar até três horários livres na aplicação.
+RN12: mudar horário para ocupado somente após confirmação.
+RN13/RN14: confirmar consulta após pagamento aprovado ou convênio confirmado e atualizar status de pagamento.
+RN15: criar exatamente três lembretes por consulta, um deles confirmacao_presenca; validar contagem e composição.
+RN16: implementar política de cancelamento, prazo mínimo e cálculo de reembolso/cobrança.
+RN17: UNIQUE em PRONTUARIO.id_paciente.
+RN18: ao marcar consulta como realizada, exigir exatamente uma EVOLUCAO_PRONTUARIO.
+RN19: impedir finalização de PRESCRICAO sem pelo menos um ITEM_PRESCRICAO.
+RN20: posologia e dosagem NOT NULL.
+RN21: paciente do exame é a paciente da consulta que o originou; não duplicar id_paciente em EXAME.
+RN22: ao concluir exame, exigir RESULTADO_EXAME com id_medico válido e laudo.
+RN23: criar ACOMPANHAMENTO para toda consulta e definir data_prevista = data da consulta + 7 dias.
+
+OBSERVAÇÕES IMPORTANTES
+1. A RN05 enviada nesta versão permite que a paciente possua vários convênios. Não foi imposta a regra de apenas um convênio ativo, pois ela não consta no conjunto de 23 regras fornecido nesta solicitação.
+2. Para garantir que CONSULTA.id_paciente_convenio pertence à mesma paciente, usar FK composta com chave candidata (id_paciente_convenio, id_paciente) em PACIENTE_CONVENIO, e armazenar id_paciente na CONSULTA junto dessa FK, ou trigger equivalente.
+3. Exatamente três lembretes e pelo menos um lembrete de confirmação exigem validação transacional/trigger; numero_lembrete restringe posições de 1 a 3.
+4. A evolução é vinculada à consulta; o prontuário correto é recuperado pela paciente da consulta. Se o projeto exigir FK direta ao prontuário, deve-se usar FK composta que garanta a mesma paciente.
+5. A confirmação de consulta e o bloqueio de agenda devem ser transacionais para evitar duas confirmações simultâneas.
+6. O modelo lógico descreve estrutura e restrições. A implementação final deve ser testada no SGBD escolhido.
