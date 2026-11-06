@@ -521,15 +521,3 @@ BEGIN
 END$$
 
 DELIMITER ;
-
-/*
-  REGRAS QUE DEVEM SER GARANTIDAS PELA APLICACAO/TRANSACAO:
-  - Validar dígitos verificadores do CPF; o CHECK verifica apenas 11 números.
-  - Validar formato de e-mail com biblioteca apropriada.
-  - Inserir prescrição e ao menos um item_prescricao na mesma transação.
-  - Criar os três lembretes (1, 2 e 3) e pelo menos um de confirmação.
-  - Ao marcar consulta como realizada, inserir sua evolução na mesma transação.
-  - Para concluir exame: informar data_realizacao, inserir resultado e então
-    atualizar exame.status para concluido, tudo na mesma transação.
-  - Garantir que todo médico tenha ao menos uma especialidade no fluxo de cadastro.
-*/
